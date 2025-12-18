@@ -1,0 +1,40 @@
+services:
+  exporter:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        VERSION: dev
+        COMMIT: none
+    container_name: biya-exporter
+    command: ["-config", "/etc/biya-exporter/config.yaml"]
+    ports:
+      - "18080:18080"
+    volumes:
+      - ./configs/config.docker.yaml:/etc/biya-exporter/config.yaml:ro
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:18080/healthz"]
+      interval: 10s
+      timeout: 3s
+      retries: 10
+
+  prometheus:
+    image: prom/prometheus:v3.8.1
+    container_name: biya-prometheus
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.path=/prometheus"
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./configs/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data:/prometheus
+    depends_on:
+      exporter:
+        condition: service_started
+    restart: unless-stopped
+
+volumes:
+  prometheus-data:
+

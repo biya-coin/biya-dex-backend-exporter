@@ -1,0 +1,40 @@
+chain:
+  chain_id: biya
+
+# 本地快速启动默认走 mock 数据（mock.enabled: true）
+node:
+  tendermint_rpc_base_url: ""
+  lcd_base_url: ""
+
+explorer:
+  base_url: "https://prv.explorer.biya.io/demo"
+  api_key: ""
+
+stake:
+  base_url: "https://prv.stake.biya.io/stake"
+  api_key: ""
+
+http:
+  listen_addr: ":18080"
+
+log:
+  level: info
+
+http_client:
+  timeout: 5s
+
+scrape_intervals:
+  realtime: 10s
+  minute: 1m
+  hourly: 1h
+
+mock:
+  enabled: true
+  values:
+    gas_utilization_ratio: 0.7
+    congestion_ratio: 0.2
+    tps_window: 150
+    mempool_pending_txs: 1234
+    tx_confirm_time_seconds: 2.5
+
+

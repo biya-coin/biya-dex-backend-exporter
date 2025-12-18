@@ -1,0 +1,17 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 30s
+
+# 说明：
+# - 当前配置仅用于本地：不启用任何 remote_write / remote_read / tracing / alertmanager。
+# - 本地 Exporter 端口由你提供为 18080。
+scrape_configs:
+  - job_name: prometheus
+    static_configs:
+      - targets: ["localhost:9090"]
+
+  - job_name: biya-exporter
+    metrics_path: /metrics
+    static_configs:
+      # Prometheus 在 compose 容器内运行时，使用服务名访问 exporter
+      - targets: ["exporter:18080"]
