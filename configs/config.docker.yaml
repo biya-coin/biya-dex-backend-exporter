@@ -3,15 +3,18 @@ chain:
 
 # 本地快速启动默认走 mock 数据（mock.enabled: true）
 node:
-  tendermint_rpc_base_url: ""
-  lcd_base_url: ""
+  # 已验证该 RPC 在当前环境可达（用于 status/block/mempool 等）
+  tendermint_rpc_base_url: "http://45.249.245.183:26657"
+  lcd_base_url: "http://45.249.245.183:26657"
+  # 交易池容量（pending tx 上限），provide.md 口径默认 5000
+  mempool_capacity: 5000
 
 explorer:
-  base_url: "https://prv.explorer.biya.io/demo"
+  base_url: "https://prv.explorer.biya.io"
   api_key: ""
 
 stake:
-  base_url: "https://prv.stake.biya.io/stake"
+  base_url: "https://prv.stake.biya.io"
   api_key: ""
 
 http:

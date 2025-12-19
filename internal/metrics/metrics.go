@@ -116,6 +116,7 @@ func New(chainID, version, commit string) (*Registry, *Metrics) {
 	reg.SetGauge("biya_tx_failed_24h_total", nil, 0)
 	reg.SetGauge("biya_tx_confirm_time_avg_seconds", nil, 0)
 	reg.SetGauge("biya_gas_utilization_ratio", nil, 0)
+	reg.SetGauge("biya_gas_price_gwei", nil, 0)
 	reg.SetGauge("biya_mempool_size", nil, 0)
 	reg.SetGauge("biya_mempool_capacity", nil, 0)
 	reg.SetGauge("biya_congestion_ratio", nil, 0)

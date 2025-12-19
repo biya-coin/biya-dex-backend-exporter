@@ -4,6 +4,8 @@ chain:
 node:
   tendermint_rpc_base_url: "https://45.249.245.183:26657"
   lcd_base_url: "https://45.249.245.183:1317"
+  # 交易池容量（pending tx 上限），provide.md 口径默认 5000
+  mempool_capacity: 5000
 
 explorer:
   base_url: "https://prv.explorer.biya.io/demo"

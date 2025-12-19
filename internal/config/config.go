@@ -33,6 +33,8 @@ type NodeConfig struct {
 	TendermintRPCBaseURL string `json:"tendermint_rpc_base_url"`
 	// Cosmos LCD REST，例如：https://api.xxx:1317
 	LCDBaseURL string `json:"lcd_base_url"`
+	// Mempool 容量（pending tx 上限）。若未配置，默认 5000（见 provide.md）
+	MempoolCapacity int `json:"mempool_capacity"`
 }
 
 type ExplorerConfig struct {
@@ -86,6 +88,7 @@ func Default() Config {
 	c.Chain.ChainID = "biya"
 	c.Node.TendermintRPCBaseURL = ""
 	c.Node.LCDBaseURL = ""
+	c.Node.MempoolCapacity = 5000
 	c.Explorer.BaseURL = "https://prv.explorer.biya.io/demo"
 	c.Explorer.APIKey = ""
 	c.Stake.BaseURL = "https://prv.stake.biya.io/stake"

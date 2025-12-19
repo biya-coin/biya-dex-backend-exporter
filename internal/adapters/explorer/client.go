@@ -168,6 +168,14 @@ func (c *Client) GetTransactionStats(ctx context.Context) (json.RawMessage, erro
 	return out, nil
 }
 
+func (c *Client) GetBlockGasUtilization(ctx context.Context) (json.RawMessage, error) {
+	var out json.RawMessage
+	if err := c.api.GetJSON(ctx, "/demo/block/gas-utilization", nil, &out); err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *Client) GetFailedTransactions24H(ctx context.Context, p NestedPagination) (json.RawMessage, error) {
 	q := url.Values{}
 	addNestedPagination(q, p)

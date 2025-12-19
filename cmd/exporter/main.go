@@ -58,8 +58,15 @@ func main() {
 	// 注意：这里仅调整代码结构以便维护；不修改 job 名称与 interval，避免影响指标 source label。
 	nodeJobs := []collectors.Job{
 		collectors.NewJob("realtime_chain", cfg.ScrapeIntervals.Realtime, collectors.NewRealtimeChainCollector(logger, m, tmCli, cfg.Mock)),
-		collectors.NewJob("minute_chain", cfg.ScrapeIntervals.Minute, collectors.NewMinuteChainCollector(logger, m, tmCli, cfg.Mock)),
-		collectors.NewJob("hourly_chain", cfg.ScrapeIntervals.Hourly, collectors.NewHourlyChainCollector(logger, m, lcdCli)),
+		collectors.NewJob("minute_chain", cfg.ScrapeIntervals.Minute, collectors.NewMinuteChainCollector(logger, m, tmCli, cfg.Mock, cfg.Node.MempoolCapacity)),
+	}
+	// LCD 在部分环境可能不通/未开放；若 baseURL 为空则跳过该 job，避免 /readyz 永远不 ready。
+	if cfg.Node.LCDBaseURL != "" {
+		nodeJobs = append(nodeJobs, collectors.NewJob("hourly_chain", cfg.ScrapeIntervals.Hourly, collectors.NewHourlyChainCollector(logger, m, lcdCli)))
+	} else {
+		logger.Warn("lcd base url is empty; skip hourly_chain collector to keep exporter ready",
+			"collector", "hourly_chain",
+		)
 	}
 
 	stakeJobs := []collectors.Job{

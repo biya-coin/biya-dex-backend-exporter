@@ -27,6 +27,14 @@ func unmarshalYAMLMinimal(b []byte, cfg *Config) error {
 
 		"node.tendermint_rpc_base_url": func(v string) error { cfg.Node.TendermintRPCBaseURL = v; return nil },
 		"node.lcd_base_url":            func(v string) error { cfg.Node.LCDBaseURL = v; return nil },
+		"node.mempool_capacity": func(v string) error {
+			n, err := strconv.Atoi(strings.TrimSpace(v))
+			if err != nil {
+				return fmt.Errorf("node.mempool_capacity: %w", err)
+			}
+			cfg.Node.MempoolCapacity = n
+			return nil
+		},
 
 		"explorer.base_url": func(v string) error { cfg.Explorer.BaseURL = v; return nil },
 		"explorer.api_key":  func(v string) error { cfg.Explorer.APIKey = v; return nil },

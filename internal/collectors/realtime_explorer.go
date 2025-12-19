@@ -2,9 +2,7 @@ package collectors
 
 import (
 	"context"
-	"encoding/json"
 	"log/slog"
-	"strconv"
 
 	"github.com/biya-coin/biya-dex-backend-exporter/internal/adapters/explorer"
 	"github.com/biya-coin/biya-dex-backend-exporter/internal/config"
@@ -25,113 +23,136 @@ func NewRealtimeExplorerCollector(log *slog.Logger, m *metrics.Metrics, api *exp
 }
 
 func (c *RealtimeExplorerCollector) Run(ctx context.Context) error {
-	// 1) block height（优先 explorer；失败则不报错，等 node collector 兜底）
+	// provide.md 指标口径：
+	// - block height:   GET /demo/block/latest                -> .data.data[0].height
+	// - tx stats:       GET /demo/transaction/stats           -> .data.count_24h / .data.tps / .data.avg_block_time / .data.active_addresses_24h
+	// - gas price gwei: GET /demo/block/gas-utilization       -> .data.gas_utilization（你已澄清：该字段即“平均 gas 费”）
+
 	if v, ok := c.readLatestBlockHeight(ctx); ok {
 		c.m.SetGauge("biya_block_height", nil, v)
 	}
 
-	// 2) tx stats（字段不确定，尽量从响应中提取常见数值；失败则兜底固定值）
-	if v, ok := c.readTxFailed24H(ctx); ok {
-		c.m.SetGauge("biya_tx_failed_24h_total", nil, v)
+	if stats, ok := c.readTransactionStats(ctx); ok {
+		if stats.Count24H >= 0 {
+			c.m.SetGauge("biya_tx_24h_total", nil, stats.Count24H)
+		}
+		if stats.TPS >= 0 {
+			c.m.SetGauge("biya_tps_current", nil, stats.TPS)
+		}
+		if stats.AvgBlockTimeSeconds >= 0 {
+			c.m.SetGauge("biya_block_time_seconds", nil, stats.AvgBlockTimeSeconds)
+		}
+		if stats.ActiveAddresses24H >= 0 {
+			c.m.SetGauge("biya_active_addresses_24h", nil, stats.ActiveAddresses24H)
+		}
 	}
 
-	// 3) gas utilization（若无法解析，使用 mock 配置值）
-	if c.mock.Enabled {
-		c.m.SetGauge("biya_gas_utilization_ratio", nil, c.mock.Values.GasUtilizationRatio)
+	if v, ok := c.readGasPriceGwei(ctx); ok {
+		c.m.SetGauge("biya_gas_price_gwei", nil, v)
 	}
 
 	return nil
 }
 
 func (c *RealtimeExplorerCollector) readLatestBlockHeight(ctx context.Context) (float64, bool) {
-	raw, err := c.api.GetLatestBlockHeight(ctx)
+	raw, err := c.api.GetLatestBlocks(ctx, explorer.CursorPage{Page: 1, PageSize: 1})
 	if err != nil {
-		c.m.SetGauge("biya_exporter_source_up", map[string]string{"source": "explorer_latest_block_height"}, 0)
+		c.m.SetGauge("biya_exporter_source_up", map[string]string{"source": "explorer_latest_block"}, 0)
 		return 0, false
 	}
-	c.m.SetGauge("biya_exporter_source_up", map[string]string{"source": "explorer_latest_block_height"}, 1)
-	// 尝试从 data 中提取 height 字段（常见命名：height / latestBlockHeight）
-	if v, ok := findFirstNumber(raw, "height", "latestBlockHeight", "blockHeight"); ok {
-		return v, true
+	c.m.SetGauge("biya_exporter_source_up", map[string]string{"source": "explorer_latest_block"}, 1)
+
+	// apiclient 已剥离 envelope.data，因此这里的结构一般为：
+	// {"data":[{"height":"123"}], ...}
+	var resp struct {
+		Data []struct {
+			Height any `json:"height"`
+		} `json:"data"`
 	}
-	return 0, false
+	if err := jsonUnmarshal(raw, &resp); err != nil {
+		c.log.Warn("explorer latest block parse failed", "collector", "realtime_explorer", "method", "readLatestBlockHeight", "err", err)
+		return 0, false
+	}
+	if len(resp.Data) == 0 {
+		return 0, false
+	}
+	v, ok := toFloat64(resp.Data[0].Height)
+	return v, ok
 }
 
-func (c *RealtimeExplorerCollector) readTxFailed24H(ctx context.Context) (float64, bool) {
-	raw, err := c.api.GetFailedTransactions24H(ctx, explorer.NestedPagination{Page: 1, PageSize: 10})
+type txStats struct {
+	Count24H            float64
+	TPS                 float64
+	AvgBlockTimeSeconds float64
+	ActiveAddresses24H  float64
+}
+
+func (c *RealtimeExplorerCollector) readTransactionStats(ctx context.Context) (txStats, bool) {
+	raw, err := c.api.GetTransactionStats(ctx)
 	if err != nil {
-		c.m.SetGauge("biya_exporter_source_up", map[string]string{"source": "explorer_failed_transactions_24h"}, 0)
-		if c.mock.Enabled {
-			// 没有对应 mock 字段时，先返回 0
-			return 0, true
-		}
-		return 0, false
+		c.m.SetGauge("biya_exporter_source_up", map[string]string{"source": "explorer_transaction_stats"}, 0)
+		return txStats{}, false
 	}
-	c.m.SetGauge("biya_exporter_source_up", map[string]string{"source": "explorer_failed_transactions_24h"}, 1)
+	c.m.SetGauge("biya_exporter_source_up", map[string]string{"source": "explorer_transaction_stats"}, 1)
 
-	// 常见：data.pagination.total 或 data.total / data.count
-	if v, ok := findFirstNumber(raw, "total", "count", "failedTotal"); ok {
-		return v, true
+	// apiclient 已剥离 envelope.data，因此这里期望结构为：
+	// {"count_24h":..., "tps":..., "avg_block_time":..., "active_addresses_24h":...}
+	var resp struct {
+		Count24H           any `json:"count_24h"`
+		TPS                any `json:"tps"`
+		AvgBlockTime       any `json:"avg_block_time"`
+		ActiveAddresses24H any `json:"active_addresses_24h"`
 	}
-	return 0, true
+	if err := jsonUnmarshal(raw, &resp); err != nil {
+		c.log.Warn("explorer tx stats parse failed", "collector", "realtime_explorer", "method", "readTransactionStats", "err", err)
+		return txStats{}, false
+	}
+
+	out := txStats{
+		Count24H:            -1,
+		TPS:                 -1,
+		AvgBlockTimeSeconds: -1,
+		ActiveAddresses24H:  -1,
+	}
+	if v, ok := toFloat64(resp.Count24H); ok {
+		out.Count24H = v
+	}
+	if v, ok := toFloat64(resp.TPS); ok {
+		out.TPS = v
+	}
+	if v, ok := toFloat64(resp.AvgBlockTime); ok {
+		out.AvgBlockTimeSeconds = v
+	}
+	if v, ok := toFloat64(resp.ActiveAddresses24H); ok {
+		out.ActiveAddresses24H = v
+	}
+	return out, true
 }
 
-// findFirstNumber 在任意 JSON 中按“常见字段名”搜索第一个可解析的数值。
-// 这里用启发式而非严格 schema，目的是快速把指标跑通，后续再精确对接字段。
-func findFirstNumber(raw json.RawMessage, keys ...string) (float64, bool) {
-	var anyv any
-	if err := json.Unmarshal(raw, &anyv); err != nil {
+func (c *RealtimeExplorerCollector) readGasPriceGwei(ctx context.Context) (float64, bool) {
+	raw, err := c.api.GetBlockGasUtilization(ctx)
+	if err != nil {
+		c.m.SetGauge("biya_exporter_source_up", map[string]string{"source": "explorer_block_gas_utilization"}, 0)
 		return 0, false
 	}
-	for _, k := range keys {
-		if v, ok := findByKey(anyv, k); ok {
-			if f, ok := toFloat64(v); ok {
-				return f, true
-			}
-		}
-	}
-	return 0, false
-}
 
-func findByKey(v any, key string) (any, bool) {
-	switch t := v.(type) {
-	case map[string]any:
-		if vv, ok := t[key]; ok {
-			return vv, true
-		}
-		for _, vv := range t {
-			if out, ok := findByKey(vv, key); ok {
-				return out, true
-			}
-		}
-	case []any:
-		for _, vv := range t {
-			if out, ok := findByKey(vv, key); ok {
-				return out, true
-			}
-		}
+	// apiclient 已剥离 envelope.data，因此这里期望结构为：
+	// {"gas_utilization": ...}
+	var resp struct {
+		GasUtilization any `json:"gas_utilization"`
 	}
-	return nil, false
-}
-
-func toFloat64(v any) (float64, bool) {
-	switch x := v.(type) {
-	case float64:
-		return x, true
-	case int:
-		return float64(x), true
-	case int64:
-		return float64(x), true
-	case json.Number:
-		f, err := x.Float64()
-		return f, err == nil
-	case string:
-		if x == "" {
-			return 0, false
-		}
-		f, err := strconv.ParseFloat(x, 64)
-		return f, err == nil
-	default:
+	if err := jsonUnmarshal(raw, &resp); err != nil {
+		c.log.Warn("explorer gas utilization parse failed", "collector", "realtime_explorer", "method", "readGasPriceGwei", "err", err)
+		c.m.SetGauge("biya_exporter_source_up", map[string]string{"source": "explorer_block_gas_utilization"}, 0)
 		return 0, false
 	}
+	v, ok := toFloat64(resp.GasUtilization)
+	if !ok {
+		// 上游在部分环境可能不返回 gas_utilization 字段；此时视为该 source 不可用，避免“source_up=1 但指标为 0”的误导。
+		c.log.Warn("explorer gas utilization field missing", "collector", "realtime_explorer", "method", "readGasPriceGwei")
+		c.m.SetGauge("biya_exporter_source_up", map[string]string{"source": "explorer_block_gas_utilization"}, 0)
+		return 0, false
+	}
+	c.m.SetGauge("biya_exporter_source_up", map[string]string{"source": "explorer_block_gas_utilization"}, 1)
+	return v, true
 }
