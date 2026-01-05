@@ -17,6 +17,8 @@ type MinuteChainCollector struct {
 	tm   *tendermint.Client
 	mock config.MockConfig
 
+	mempoolCapacity int
+
 	tpsWindow time.Duration
 	samples   []tpsSample
 }
@@ -26,12 +28,13 @@ type tpsSample struct {
 	txCount int
 }
 
-func NewMinuteChainCollector(log *slog.Logger, m *metrics.Metrics, tm *tendermint.Client, mock config.MockConfig) *MinuteChainCollector {
+func NewMinuteChainCollector(log *slog.Logger, m *metrics.Metrics, tm *tendermint.Client, mock config.MockConfig, mempoolCapacity int) *MinuteChainCollector {
 	return &MinuteChainCollector{
 		log:       log,
 		m:         m,
 		tm:        tm,
 		mock:      mock,
+		mempoolCapacity: mempoolCapacity,
 		tpsWindow: 60 * time.Second,
 		samples:   make([]tpsSample, 0, 8),
 	}
@@ -40,16 +43,28 @@ func NewMinuteChainCollector(log *slog.Logger, m *metrics.Metrics, tm *tendermin
 func (c *MinuteChainCollector) Run(ctx context.Context) error {
 	chainID := c.m.ChainID()
 
+	// provide.md：mempool capacity 默认为 5000（避免硬编码，优先走配置）
+	capacity := c.mempoolCapacity
+	if capacity <= 0 {
+		capacity = 5000
+	}
+	c.m.SetGauge("biya_mempool_capacity", nil, float64(capacity))
+
 	// 1) mempool pending
 	if v, ok := c.readMempoolPending(ctx); ok {
 		c.m.SetGauge("biya_chain_mempool_pending_txs", map[string]string{"chain_id": chainID}, v)
 		c.m.SetGauge("biya_mempool_size", nil, v)
+		// 顺手把 congestion ratio 填上（已有指标定义与告警/recording rule 依赖）
+		if capacity > 0 {
+			c.m.SetGauge("biya_congestion_ratio", nil, v/float64(capacity))
+		}
 	}
 
 	// 2) TPS window
 	if v, ok := c.readTPSWindow(ctx); ok {
 		c.m.SetGauge("biya_chain_tps_window", map[string]string{"chain_id": chainID}, v)
-		c.m.SetGauge("biya_tps_current", nil, v)
+		// 注意：biya_tps_current 的 provide.md 口径来自 explorer /demo/transaction/stats
+		// 这里仅保留链上近似值到 biya_chain_tps_window，避免多 collector 覆盖同名指标造成口径冲突。
 	}
 
 	return nil
@@ -67,7 +82,8 @@ func (c *MinuteChainCollector) readMempoolPending(ctx context.Context) (float64,
 	}
 	c.m.SetGauge("biya_exporter_source_up", map[string]string{"source": "tendermint_mempool"}, 1)
 
-	n, err := strconv.ParseFloat(resp.Result.NTxs, 64)
+	// provide.md：取值为 .result.total
+	n, err := strconv.ParseFloat(resp.Result.Total, 64)
 	if err != nil {
 		return 0, false
 	}

@@ -227,6 +227,19 @@ Same as Module 1 & 3 metrics, queried with range:
 
 ## Alert Rules (Prometheus/Alertmanager)
 
+> **Integration Note**: Alert rules are evaluated by Prometheus and sent to Alertmanager.  
+> The Gin backend queries Alertmanager API v2 to display and manage alerts.  
+> See `ALERTMANAGER_RESEARCH.md` for detailed API reference.
+
+**Alert Lifecycle**:
+```
+Prometheus (evaluates rules) → Alertmanager (routes/silences) → Lark (notifications)
+                                    ↓
+                              Gin Backend (query/manage via API v2)
+                                    ↓
+                              Frontend (display/react)
+```
+
 ### 6.1 Critical Alerts
 
 ```yaml

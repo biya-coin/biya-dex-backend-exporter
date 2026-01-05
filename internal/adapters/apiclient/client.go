@@ -50,10 +50,6 @@ func (c *Client) doJSON(ctx context.Context, method, path string, q url.Values, 
 	if c.baseURL == "" {
 		return fmt.Errorf("api base url is empty")
 	}
-	if c.apiKey == "" {
-		// 文档约定为必填；避免“悄悄打无鉴权请求”导致排查困难。
-		return fmt.Errorf("api key is empty")
-	}
 	if path == "" || !strings.HasPrefix(path, "/") {
 		return fmt.Errorf("invalid api path: %q", path)
 	}
@@ -68,7 +64,10 @@ func (c *Client) doJSON(ctx context.Context, method, path string, q url.Values, 
 		return err
 	}
 	req.Header.Set("Accept", "application/json")
-	req.Header.Set("Authorization", "Bearer "+c.apiKey)
+	// 允许 apiKey 为空：有些环境/接口可能不强制鉴权；若上游需要鉴权则会返回 401/403，由调用方通过 source_up 体现。
+	if strings.TrimSpace(c.apiKey) != "" {
+		req.Header.Set("Authorization", "Bearer "+c.apiKey)
+	}
 
 	resp, err := c.http.Do(req)
 	if err != nil {
@@ -85,11 +84,32 @@ func (c *Client) doJSON(ctx context.Context, method, path string, q url.Values, 
 		return err
 	}
 
+	// 兼容两类响应：
+	// 1) 标准 envelope：{"code":..., "message":..., "data":...}
+	// 2) 直接返回 data（无 envelope），例如 stake 某些接口：{"validators":[...], ...}
+	var top map[string]json.RawMessage
+	if err := json.Unmarshal(b, &top); err != nil {
+		return err
+	}
+
+	// 无 envelope：直接把 body 当成 data
+	if _, hasCode := top["code"]; !hasCode {
+		if out == nil {
+			return nil
+		}
+		return json.Unmarshal(b, out)
+	}
+
+	// 有 envelope：按 envelope 规则解包 data
 	var env Envelope
 	if err := json.Unmarshal(b, &env); err != nil {
 		return err
 	}
-	if env.Code != 0 {
+	// 不同环境返回的 code 口径可能不同：
+	// - 部分接口使用 0 表示成功
+	// - 部分接口使用 200 表示成功（同时 http status 也是 200）
+	// 这里兼容两种口径，避免误判导致指标全部为 0。
+	if env.Code != 0 && env.Code != 200 {
 		// message 由上游返回；这里保留 code，便于排查。
 		return fmt.Errorf("api error code=%d message=%q", env.Code, env.Message)
 	}

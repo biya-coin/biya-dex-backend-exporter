@@ -26,6 +26,8 @@ func (c *RealtimeStakeCollector) Run(ctx context.Context) error {
 		c.m.SetGauge("biya_exporter_source_up", map[string]string{"source": "stake_validators"}, 0)
 		// 按需求：拿不到先返回固定值，不让 exporter 直接失败
 		c.m.SetGauge("biya_validators_total", nil, 0)
+		// provide.md：biya_validators_active 取 validators 数组长度
+		c.m.SetGauge("biya_validators_active", nil, 0)
 		c.m.SetGauge("biya_validators_jailed", nil, 0)
 		return nil
 	}
@@ -55,6 +57,8 @@ func (c *RealtimeStakeCollector) Run(ctx context.Context) error {
 	c.m.SetGauge("biya_stake_validators_jailed", map[string]string{"chain_id": chainID}, float64(jailed))
 	// METRICS.md（聚合）
 	c.m.SetGauge("biya_validators_total", nil, float64(total))
+	// provide.md：biya_validators_active 取 validators 数组长度（你已澄清）
+	c.m.SetGauge("biya_validators_active", nil, float64(total))
 	c.m.SetGauge("biya_validators_jailed", nil, float64(jailed))
 
 	// METRICS.md（单验证人维度）：只对当前返回的 validators 填充；字段不足的先置 0。
