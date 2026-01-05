@@ -13,6 +13,8 @@ services:
     volumes:
       - ./configs/config.docker.yaml:/etc/biya-exporter/config.yaml:ro
     restart: unless-stopped
+    networks:
+      - biya-network
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://localhost:18080/healthz"]
       interval: 10s
@@ -25,16 +27,68 @@ services:
     command:
       - "--config.file=/etc/prometheus/prometheus.yml"
       - "--storage.tsdb.path=/prometheus"
+      - "--web.enable-lifecycle"
     ports:
       - "9090:9090"
     volumes:
       - ./configs/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./configs/prometheus/alert_rules.yml:/etc/prometheus/alert_rules.yml:ro
       - prometheus-data:/prometheus
     depends_on:
       exporter:
         condition: service_started
     restart: unless-stopped
+    networks:
+      - biya-network
+
+  alertmanager:
+    image: prom/alertmanager:v0.28.1
+    container_name: biya-alertmanager
+    command:
+      - "--config.file=/etc/alertmanager/alertmanager.yml"
+      - "--storage.path=/alertmanager"
+      - "--web.external-url=http://localhost:9093"
+    ports:
+      - "9093:9093"
+    volumes:
+      - ./configs/prometheus/alertmanager.yml:/etc/alertmanager/alertmanager.yml:ro
+      - alertmanager-data:/alertmanager
+    restart: unless-stopped
+    networks:
+      - biya-network
+    depends_on:
+      lark-webhook-proxy:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:9093/-/healthy"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+
+  lark-webhook-proxy:
+    build:
+      context: .
+      dockerfile: Dockerfile.lark
+    container_name: biya-lark-webhook-proxy
+    ports:
+      - "5001:5001"
+    restart: unless-stopped
+    networks:
+      - biya-network
+    environment:
+      - PYTHONUNBUFFERED=1
+    healthcheck:
+      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:5001/health')"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+networks:
+  biya-network:
+    driver: bridge
 
 volumes:
   prometheus-data:
+  alertmanager-data:
 

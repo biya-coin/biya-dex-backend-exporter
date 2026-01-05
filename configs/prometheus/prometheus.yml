@@ -2,9 +2,25 @@ global:
   scrape_interval: 15s
   evaluation_interval: 30s
 
+# 告警规则配置
+rule_files:
+  - /etc/prometheus/alert_rules.yml
+
+# Alertmanager 配置
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+            # 如果使用 Docker Compose，使用服务名
+            - 'alertmanager:9093'
+            # 如果本地运行，使用 localhost
+            # - 'localhost:9093'
+      timeout: 10s
+
 # 说明：
-# - 当前配置仅用于本地：不启用任何 remote_write / remote_read / tracing / alertmanager。
-# - 本地 Exporter 端口由你提供为 18080。
+# - 当前配置包含告警规则和 Alertmanager 连接配置
+# - 本地 Exporter 端口由你提供为 18080
+# - Alertmanager 默认端口为 9093
 scrape_configs:
   - job_name: prometheus
     static_configs:

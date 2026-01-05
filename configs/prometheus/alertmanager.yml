@@ -1,0 +1,151 @@
+# Alertmanager 配置文件
+# 用于管理告警的路由、分组、抑制和通知
+
+global:
+  # 告警解决后的等待时间
+  resolve_timeout: 5m
+  
+  # SMTP 配置（邮件通知）
+  smtp_smarthost: 'smtp.example.com:587'
+  smtp_from: 'alertmanager@biya.chain'
+  smtp_auth_username: 'alertmanager@biya.chain'
+  smtp_auth_password: 'your-smtp-password'
+  smtp_require_tls: true
+
+# 告警模板
+templates:
+  - '/etc/alertmanager/templates/*.tmpl'
+
+# 路由配置：定义告警如何分组和发送
+route:
+  # 默认接收者
+  receiver: 'default-receiver'
+  
+  # 分组等待时间：同一组内的告警等待多久后才发送第一条通知
+  group_wait: 30s
+  
+  # 分组间隔时间：同一组内新告警产生后，多久发送一次更新通知
+  group_interval: 5m
+  
+  # 重复通知间隔：告警持续未解决时，多久重复发送一次
+  repeat_interval: 4h
+  
+  # 分组标签：按这些标签对告警进行分组
+  group_by: ['alertname', 'cluster', 'severity']
+  
+  # 子路由：针对不同类型的告警配置不同的接收者
+  routes:
+    # 紧急告警路由
+    - match:
+        severity: emergency
+      receiver: 'emergency-team'
+      group_wait: 10s
+      group_interval: 1m
+      repeat_interval: 30m
+      continue: true  # 继续匹配其他路由
+    
+    # 严重告警路由
+    - match:
+        severity: critical
+      receiver: 'oncall-team'
+      group_wait: 20s
+      group_interval: 2m
+      repeat_interval: 1h
+      continue: true
+    
+    # 警告级别告警路由
+    - match:
+        severity: warning
+      receiver: 'dev-team'
+      group_wait: 30s
+      group_interval: 5m
+      repeat_interval: 4h
+    
+    # 性能相关告警路由
+    - match:
+        category: performance
+      receiver: 'performance-team'
+      group_by: ['alertname', 'subsystem']
+      repeat_interval: 2h
+    
+    # 可靠性告警路由
+    - match:
+        category: reliability
+      receiver: 'reliability-team'
+      group_wait: 15s
+      repeat_interval: 30m
+
+# 抑制规则：某些告警触发时，抑制其他相关告警
+inhibit_rules:
+  # 综合异常告警触发时，抑制单个指标的告警
+  - source_match:
+      alertname: 'PerformanceComprehensiveAbnormal'
+    target_match_re:
+      alertname: '(TPSAbnormalDrop|NetworkLatencyAbnormalIncrease|TransactionSuccessRateDrop)'
+    equal: ['cluster']
+  
+  # 紧急告警抑制警告告警
+  - source_match:
+      severity: 'emergency'
+    target_match:
+      severity: 'warning'
+    equal: ['alertname', 'cluster']
+  
+  # 严重告警抑制警告告警
+  - source_match:
+      severity: 'critical'
+    target_match:
+      severity: 'warning'
+    equal: ['alertname', 'cluster']
+
+# 接收者配置：定义告警通知的目标
+receivers:
+  # 默认接收者
+  - name: 'default-receiver'
+    webhook_configs:
+      - url: 'http://lark-webhook-proxy:5001/webhook/lark'
+        send_resolved: true
+
+  # 开发团队
+  - name: 'dev-team'
+    # 飞书机器人通知
+    webhook_configs:
+      - url: 'http://lark-webhook-proxy:5001/webhook/lark'
+        send_resolved: true
+
+
+
+# 时间窗口配置（可选）
+# 在特定时间段内静默告警或改变路由策略
+time_intervals:
+  # 工作时间：每天 09:00 - 18:00
+  - name: work-hours
+    time_intervals:
+      - times:
+          - start_time: '09:00'
+            end_time: '18:00'
+        location: 'Asia/Shanghai'
+  
+  # 非工作时间：每天 18:00 - 次日 09:00（拆分为两个时间段避免跨天）
+  - name: off-hours
+    time_intervals:
+      # 每天晚上 18:00 到 23:59
+      - times:
+          - start_time: '18:00'
+            end_time: '23:59'
+        location: 'Asia/Shanghai'
+      # 每天凌晨 00:00 到 09:00
+      - times:
+          - start_time: '00:00'
+            end_time: '09:00'
+        location: 'Asia/Shanghai'
+
+# 静默规则（通过 API 或 Web UI 动态配置）
+# 这里仅作示例，实际使用时通过 amtool 或 Web UI 添加
+# silence_defaults:
+#   - matchers:
+#       - alertname="MaintenanceMode"
+#     comment: "Scheduled maintenance"
+#     created_by: "admin@biya.chain"
+#     ends_at: "2025-12-31T23:59:59Z"
+

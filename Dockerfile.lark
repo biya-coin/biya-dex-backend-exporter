@@ -1,0 +1,31 @@
+FROM python:3.11-slim
+
+LABEL maintainer="Biya Chain Team"
+LABEL description="Lark Webhook Proxy for Alertmanager"
+
+# 设置工作目录
+WORKDIR /app
+
+# 复制依赖文件
+COPY scripts/requirements_lark.txt /app/requirements.txt
+
+# 安装依赖
+RUN pip install --no-cache-dir -r requirements.txt
+
+# 复制应用代码
+COPY scripts/lark_webhook_proxy.py /app/lark_webhook_proxy.py
+
+# 设置环境变量
+ENV PYTHONUNBUFFERED=1
+ENV FLASK_APP=lark_webhook_proxy.py
+
+# 暴露端口
+EXPOSE 5001
+
+# 健康检查
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
+  CMD python -c "import requests; requests.get('http://localhost:5001/health')"
+
+# 使用 gunicorn 启动服务（生产环境）
+CMD ["gunicorn", "--bind", "0.0.0.0:5001", "--workers", "2", "--timeout", "30", "--access-logfile", "-", "--error-logfile", "-", "lark_webhook_proxy:app"]
+
