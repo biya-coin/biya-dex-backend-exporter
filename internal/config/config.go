@@ -22,6 +22,9 @@ type Config struct {
 	ScrapeIntervals ScrapeIntervalsConfig `json:"scrape_intervals"`
 	HTTPClient      HTTPClientConfig      `json:"http_client"`
 	Mock            MockConfig            `json:"mock"`
+	
+	// 监控系统配置
+	Monitoring MonitoringConfig `json:"monitoring"`
 }
 
 type ChainConfig struct {
@@ -83,6 +86,13 @@ type MockConfig struct {
 	} `json:"values"`
 }
 
+type MonitoringConfig struct {
+	// Prometheus 地址，用于查询告警历史数据
+	PrometheusBaseURL string `json:"prometheus_base_url"`
+	// Alertmanager 地址，用于查询当前活跃告警
+	AlertmanagerBaseURL string `json:"alertmanager_base_url"`
+}
+
 func Default() Config {
 	var c Config
 	c.Chain.ChainID = "biya"
@@ -105,6 +115,8 @@ func Default() Config {
 	c.Mock.Values.TPSWindow = 0
 	c.Mock.Values.MempoolPendingTxs = 0
 	c.Mock.Values.TxConfirmTimeSeconds = 0
+	c.Monitoring.PrometheusBaseURL = "http://localhost:9090"
+	c.Monitoring.AlertmanagerBaseURL = "http://localhost:9093"
 	return c
 }
 

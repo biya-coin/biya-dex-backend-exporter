@@ -10,7 +10,9 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/biya-coin/biya-dex-backend-exporter/internal/adapters/alertmanager"
 	"github.com/biya-coin/biya-dex-backend-exporter/internal/adapters/explorer"
+	"github.com/biya-coin/biya-dex-backend-exporter/internal/adapters/prometheus"
 	"github.com/biya-coin/biya-dex-backend-exporter/internal/adapters/stake"
 	"github.com/biya-coin/biya-dex-backend-exporter/internal/adapters/tendermint"
 	"github.com/biya-coin/biya-dex-backend-exporter/internal/collectors"
@@ -87,6 +89,29 @@ func main() {
 	}()
 
 	httpSrv := server.New(cfg.HTTP.ListenAddr, reg, s.Ready)
+
+	// 初始化监控系统客户端（如果配置了）
+	if cfg.Monitoring.PrometheusBaseURL != "" || cfg.Monitoring.AlertmanagerBaseURL != "" {
+		var promClient *prometheus.Client
+		var alertClient *alertmanager.Client
+
+		if cfg.Monitoring.PrometheusBaseURL != "" {
+			promClient = prometheus.NewClient(cfg.Monitoring.PrometheusBaseURL, cfg.HTTPClient.Timeout)
+			logger.Info("prometheus client initialized", "url", cfg.Monitoring.PrometheusBaseURL)
+		}
+
+		if cfg.Monitoring.AlertmanagerBaseURL != "" {
+			alertClient = alertmanager.NewClient(cfg.Monitoring.AlertmanagerBaseURL, cfg.HTTPClient.Timeout)
+			logger.Info("alertmanager client initialized", "url", cfg.Monitoring.AlertmanagerBaseURL)
+		}
+
+		if promClient != nil || alertClient != nil {
+			alertTrendService := server.NewAlertTrendService(promClient, alertClient, logger)
+			httpSrv.SetAlertTrendService(alertTrendService)
+			logger.Info("alert trend service enabled")
+		}
+	}
+
 	if err := httpSrv.Start(ctx); err != nil {
 		logger.Error("http server stopped with error", "err", err)
 		os.Exit(1)

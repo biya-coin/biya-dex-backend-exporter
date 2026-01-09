@@ -10,13 +10,19 @@ import (
 )
 
 type Server struct {
-	addr  string
-	reg   *metrics.Registry
-	ready func() bool
+	addr              string
+	reg               *metrics.Registry
+	ready             func() bool
+	alertTrendService *AlertTrendService
 }
 
 func New(listenAddr string, reg *metrics.Registry, ready func() bool) *Server {
 	return &Server{addr: listenAddr, reg: reg, ready: ready}
+}
+
+// SetAlertTrendService 设置告警趋势服务
+func (s *Server) SetAlertTrendService(service *AlertTrendService) {
+	s.alertTrendService = service
 }
 
 func (s *Server) Start(ctx context.Context) error {
@@ -38,6 +44,11 @@ func (s *Server) Start(ctx context.Context) error {
 		w.WriteHeader(http.StatusOK)
 		_, _ = w.Write([]byte("ready"))
 	})
+
+	// 告警趋势查询接口
+	if s.alertTrendService != nil {
+		mux.HandleFunc("/api/v1/alerts/trend", s.alertTrendService.HandleAlertTrend)
+	}
 
 	srv := &http.Server{
 		Addr:              s.addr,

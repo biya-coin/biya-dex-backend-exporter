@@ -31,3 +31,10 @@ scrape_configs:
     static_configs:
       # Prometheus 在 compose 容器内运行时，使用服务名访问 exporter
       - targets: ["exporter:18080"]
+
+  - job_name: chain-node
+    metrics_path: /metrics
+    static_configs:
+      # 访问主机上的 26660 端口
+      # 通过 extra_hosts 配置的 host.docker.internal 访问主机端口
+      - targets: ["172.24.0.1:26660"]

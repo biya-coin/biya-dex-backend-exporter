@@ -1,0 +1,4 @@
+[submodule "biya-api-docs"]
+	path = biya-api-docs
+	url = https://github.com/biya-coin/biya-api-docs.git
+	branch = main

@@ -11,4 +11,5 @@
     - 指标名称: biya_mempool_size
     - iframe: <iframe src="http://45.249.245.183:3000/d-solo/biya-chain-overview/biya-chain-e6a682-e8a788?from=1767946102259&to=1767949702259&refresh=10s&orgId=1&theme=light&panelId=14&__feature.dashboardSceneSolo" width="450" height="200" frameborder="0"></iframe>
     
-    
+- 告警趋势:
+    - iframe: <iframe src="http://45.249.245.183:3000/d-solo/biya-chain-overview/biya-chain-e6a682-e8a788?from=1767348905756&to=1767953705756&refresh=10s&orgId=1&theme=light&panelId=15&__feature.dashboardSceneSolo" width="450" height="200" frameborder="0"></iframe> 

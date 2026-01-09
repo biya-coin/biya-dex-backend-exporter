@@ -34,6 +34,9 @@ services:
       - ./configs/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
       - ./configs/prometheus/alert_rules.yml:/etc/prometheus/alert_rules.yml:ro
       - prometheus-data:/prometheus
+    extra_hosts:
+      # 使用 host-gateway 自动解析为主机 IP，避免硬编码网关地址
+      - "host.docker.internal:host-gateway"
     depends_on:
       exporter:
         condition: service_started

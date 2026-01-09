@@ -40,4 +40,11 @@ mock:
     mempool_pending_txs: 1234
     tx_confirm_time_seconds: 2.5
 
+# 监控系统配置（Docker Compose 环境使用服务名）
+monitoring:
+  # Prometheus 地址（使用 Docker Compose 服务名）
+  prometheus_base_url: "http://prometheus:9090"
+  # Alertmanager 地址（使用 Docker Compose 服务名）
+  alertmanager_base_url: "http://alertmanager:9093"
+
 
