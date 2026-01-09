@@ -51,6 +51,10 @@ func (c *RealtimeExplorerCollector) Run(ctx context.Context) error {
 		c.m.SetGauge("biya_gas_price", nil, v)
 	}
 
+	if v, ok := c.readGasUtilization(ctx); ok {
+		c.m.SetGauge("biya_gas_utilization", nil, v)
+	}
+
 	return nil
 }
 
@@ -154,5 +158,33 @@ func (c *RealtimeExplorerCollector) readGasPriceGwei(ctx context.Context) (float
 		return 0, false
 	}
 	c.m.SetGauge("biya_exporter_source_up", map[string]string{"source": "explorer_block_gas_price"}, 1)
+	return v, true
+}
+
+func (c *RealtimeExplorerCollector) readGasUtilization(ctx context.Context) (float64, bool) {
+	raw, err := c.api.GetBlockGasUtilization(ctx)
+	if err != nil {
+		c.m.SetGauge("biya_exporter_source_up", map[string]string{"source": "explorer_block_gas_utilization"}, 0)
+		return 0, false
+	}
+
+	// apiclient 已剥离 envelope.data，因此这里期望结构为：
+	// {"gas_utilization": ...}
+	var resp struct {
+		GasUtilization any `json:"gas_utilization"`
+	}
+	if err := jsonUnmarshal(raw, &resp); err != nil {
+		c.log.Warn("explorer gas utilization parse failed", "collector", "realtime_explorer", "method", "readGasUtilization", "err", err)
+		c.m.SetGauge("biya_exporter_source_up", map[string]string{"source": "explorer_block_gas_utilization"}, 0)
+		return 0, false
+	}
+	v, ok := toFloat64(resp.GasUtilization)
+	if !ok {
+		// 上游在部分环境可能不返回 gas_utilization 字段；此时视为该 source 不可用，避免"source_up=1 但指标为 0"的误导。
+		c.log.Warn("explorer gas utilization field missing", "collector", "realtime_explorer", "method", "readGasUtilization")
+		c.m.SetGauge("biya_exporter_source_up", map[string]string{"source": "explorer_block_gas_utilization"}, 0)
+		return 0, false
+	}
+	c.m.SetGauge("biya_exporter_source_up", map[string]string{"source": "explorer_block_gas_utilization"}, 1)
 	return v, true
 }

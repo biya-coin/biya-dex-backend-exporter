@@ -91,13 +91,25 @@ services:
       - "3000:3000"
     volumes:
       - ./configs/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./configs/grafana/grafana.ini:/etc/grafana/grafana.ini:ro
       - grafana-data:/var/lib/grafana
     environment:
       - GF_SECURITY_ADMIN_USER=admin
       - GF_SECURITY_ADMIN_PASSWORD=admin
       - GF_USERS_ALLOW_SIGN_UP=false
-      - GF_SERVER_ROOT_URL=http://localhost:3000
+      # 设置公网访问地址，确保生成的 iframe URL 使用公网 IP
+      - GF_SERVER_ROOT_URL=http://45.249.245.183:3000
+      - GF_SERVER_DOMAIN=45.249.245.183:3000
+      - GF_SERVER_PUBLIC_URL=http://45.249.245.183:3000
       - GF_DASHBOARDS_DEFAULT_HOME_DASHBOARD_UID=biya-chain-overview
+      # 允许 iframe 嵌入
+      - GF_SECURITY_ALLOW_EMBEDDING=true
+      # 允许匿名访问（可选，如果需要公开访问）
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Viewer
+      # 或者使用 API Key 认证（推荐用于生产环境）
+      # 取消注释以下行并设置 API Key
+      # - GF_AUTH_ANONYMOUS_ENABLED=false
     depends_on:
       prometheus:
         condition: service_started

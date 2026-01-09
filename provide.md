@@ -27,14 +27,17 @@
       指标描述：当前Gas费
       获取的地址：  curl --request GET --url https://prv.explorer.biya.io/api/v1/block/gas-utilization
       取值： .data.gas_price
-
+    - 指标名称：biya_gas_utilization
+      指标描述：Gas利用率
+      获取的地址：  curl --request GET --url https://prv.explorer.biya.io/api/v1/block/gas-utilization
+      取值： .data.gas_utilization
 
 ## chain node
     - 指标名称：biya_mempool_capacity 
       指标描述：交易池的大小 
       获取的地址：默认配置5000
       取值：5000
-    - 指标名称：biya_mempool_size 
+    - 指标名称：biya_mempool_size
       指标描述：当前交易池中pending的交易数 
       获取的地址：curl -s http://45.249.245.183:26657/num_unconfirmed_txs
       取值：.result.total

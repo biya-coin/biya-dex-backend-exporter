@@ -56,7 +56,7 @@
       "options": {
         "orientation": "auto",
         "reduceOptions": {
-          "values": false,
+          "values": true,
           "calcs": [
             "lastNotNull"
           ],
@@ -73,7 +73,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "biya_chain_head_block_height{chain_id=\"biya\"}",
+          "expr": "max(biya_chain_head_block_height) by ()",
           "refId": "A"
         }
       ],
@@ -156,6 +156,7 @@
           "sort": "none"
         }
       },
+      "pluginVersion": "10.0.0",
       "targets": [
         {
           "datasource": {
@@ -339,6 +340,7 @@
           "sort": "none"
         }
       },
+      "pluginVersion": "10.0.0",
       "targets": [
         {
           "datasource": {
@@ -553,6 +555,7 @@
           "sort": "none"
         }
       },
+      "pluginVersion": "10.0.0",
       "targets": [
         {
           "datasource": {
@@ -643,6 +646,7 @@
           "sort": "none"
         }
       },
+      "pluginVersion": "10.0.0",
       "targets": [
         {
           "datasource": {

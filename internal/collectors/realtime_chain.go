@@ -78,7 +78,7 @@ func (c *RealtimeChainCollector) Run(ctx context.Context) error {
 	if c.mock.Enabled {
 		c.m.SetGauge("biya_chain_block_gas_utilization_ratio_avg", map[string]string{"chain_id": chainID}, c.mock.Values.GasUtilizationRatio)
 		c.m.SetGauge("biya_chain_congestion_ratio", map[string]string{"chain_id": chainID}, c.mock.Values.CongestionRatio)
-		c.m.SetGauge("biya_gas_utilization_ratio", nil, c.mock.Values.GasUtilizationRatio)
+		c.m.SetGauge("biya_gas_utilization", nil, c.mock.Values.GasUtilizationRatio)
 	}
 
 	return nil

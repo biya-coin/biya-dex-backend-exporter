@@ -50,7 +50,8 @@ func TestRealtimeExplorerCollector_ProvideMDMetrics(t *testing.T) {
 				"code":    0,
 				"message": "success",
 				"data": map[string]any{
-					"gas_price": "88.8",
+					"gas_price":       "88.8",
+					"gas_utilization": "0.75",
 				},
 			})
 			return
@@ -78,6 +79,7 @@ func TestRealtimeExplorerCollector_ProvideMDMetrics(t *testing.T) {
 	assertContains(t, out, "\nbiya_block_time_seconds 2.2\n")
 	assertContains(t, out, "\nbiya_active_addresses_24h 100\n")
 	assertContains(t, out, "\nbiya_gas_price 88.8\n")
+	assertContains(t, out, "\nbiya_gas_utilization 0.75\n")
 }
 
 func assertContains(t *testing.T, s, sub string) {

@@ -65,7 +65,7 @@ Labels add dimensions to metrics:
 | `biya_gas_price` | Gauge | - | Current average gas price | biya-explorer |
 | `biya_gas_price_24h_max_gwei` | Gauge | - | 24h maximum gas price | biya-explorer |
 | `biya_gas_price_24h_min_gwei` | Gauge | - | 24h minimum gas price | biya-explorer |
-| `biya_gas_utilization_ratio` | Gauge | - | Block gas utilization (0-1) | biya-explorer |
+| `biya_gas_utilization` | Gauge | - | Block gas utilization (0-1) | biya-explorer |
 | `biya_gas_limit_per_block` | Gauge | - | Block gas limit | biya-explorer |
 | `biya_gas_used_per_block` | Gauge | - | Average gas used per block | biya-explorer |
 
@@ -139,7 +139,7 @@ Labels add dimensions to metrics:
 |-------------|------|-------------|--------|
 | `biya_tps_current` | Gauge | Current TPS | 30% |
 | `biya_tx_confirm_time_avg_seconds` | Gauge | Avg confirmation time | 30% |
-| `biya_gas_utilization_ratio` | Gauge | Gas utilization | 25% |
+| `biya_gas_utilization` | Gauge | Gas utilization | 25% |
 | `biya_mempool_size` | Gauge | Pending transactions | 15% |
 
 ### 3.2 Performance Formula (Calculated in Gin)
@@ -195,7 +195,7 @@ Prometheus automatically stores time series data. Use `query_range` API for hist
 Same as Module 1 & 3 metrics, queried with range:
 - `biya_tps_current`
 - `biya_tx_confirm_time_avg_seconds`
-- `biya_gas_utilization_ratio`
+- `biya_gas_utilization`
 - `biya_mempool_size`
 
 ---

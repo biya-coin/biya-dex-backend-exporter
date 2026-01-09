@@ -1,0 +1,14 @@
+- Gas价格24小时趋势图:
+    - 指标名称: biya_gas_price
+    - ifram: <iframe src="http://45.249.245.183:3000/d-solo/biya-chain-overview/biya-chain-e6a682-e8a788?from=1767940142384&to=1767943742384&refresh=10s&showCategory=Repeat%20options&orgId=1&theme=light&panelId=11&__feature.dashboardSceneSolo" width="450" height="200" frameborder="0"></iframe>
+- Tps趋势:
+    - 指标名称: biya_tps_current
+    - ifram: <iframe src="http://45.249.245.183:3000/d-solo/biya-chain-overview/biya-chain-e6a682-e8a788?from=1767945737051&to=1767949337051&refresh=10s&orgId=1&theme=light&panelId=12&__feature.dashboardSceneSolo" width="450" height="200" frameborder="0"></iframe>
+- Gas利用率趋势:
+    - 指标名称: biya_gas_utilization
+    - iframe: <iframe src="http://45.249.245.183:3000/d-solo/biya-chain-overview/biya-chain-e6a682-e8a788?from=1767945814092&to=1767949414092&refresh=10s&orgId=1&theme=light&panelId=13&__feature.dashboardSceneSolo" width="450" height="200" frameborder="0"></iframe>
+- 待处理交易数趋势:
+    - 指标名称: biya_mempool_size
+    - iframe: <iframe src="http://45.249.245.183:3000/d-solo/biya-chain-overview/biya-chain-e6a682-e8a788?from=1767946102259&to=1767949702259&refresh=10s&orgId=1&theme=light&panelId=14&__feature.dashboardSceneSolo" width="450" height="200" frameborder="0"></iframe>
+    
+    

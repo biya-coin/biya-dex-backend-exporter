@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Biya Chain 监控面板 - iframe 嵌入示例</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: #f5f5f5;
+        }
+        
+    
+        
+        h1 {
+            color: #333;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        
+
+ 
+    
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Biya Chain 监控面板</h1>
+        
+       
+            
+     
+        
+        <!-- Gas 价格 -->
+        <div  style="width: 970px; min-height: 420px; padding: 10px; background: #fff; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.07); margin: 0 auto 32px auto; display: flex; flex-direction: column; align-items: center;">
+            <div class="panel-header" style="margin-bottom: 8px; color: #1a237e; font-weight: bold; font-size: 18px;">Gas 价格</div>
+            <iframe 
+                src="http://45.249.245.183:3000/d-solo/biya-chain-overview/biya-chain-e6a682-e8a788?from=1767940142384&to=1767943742384&refresh=10s&showCategory=Repeat%20options&orgId=1&theme=light&panelId=11&__feature.dashboardSceneSolo"
+                width="950"
+                height="400"
+                style="border: none; border-radius: 6px; box-shadow: 0 2px 12px rgba(0,0,0,0.12); display: block;"
+                allowfullscreen
+            ></iframe>
+        </div>
+            
+           
+        
+        <div style="margin-top: 30px; padding: 20px; background: white; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+            <h2 style="margin-bottom: 15px; color: #333;">使用说明</h2>
+            <ul style="line-height: 1.8; color: #666;">
+                <li><strong>获取正确的面板 ID：</strong>在 Grafana 中点击面板右上角菜单 → "Share" → "Embed"，复制 iframe URL 中的 <code>panelId</code> 参数值</li>
+                <li><strong>注意：</strong>Grafana 导入仪表板时可能会重新分配面板 ID，所以配置文件中的 ID（1-8）可能与实际 ID 不同</li>
+                <li><strong>URL 格式：</strong>使用 <code>d-solo</code> 路径和 <code>panelId</code> 参数（这是 Grafana 推荐的单个面板嵌入方式）</li>
+                <li><strong>时间范围：</strong>可以通过修改 <code>from</code> 和 <code>to</code> 参数调整（当前为 <code>now-1h</code> 到 <code>now</code>）</li>
+                <li><strong>刷新间隔：</strong>可以通过 <code>refresh</code> 参数调整（当前为 10 秒）</li>
+                <li><strong>示例：</strong>Gas 价格面板的实际 ID 是 11，所以使用 <code>panelId=11</code></li>
+            </ul>
+        </div>
+    </div>
+</body>
+</html>
