@@ -3,6 +3,7 @@ package collectors
 import (
 	"context"
 	"log/slog"
+	"time"
 
 	"github.com/biya-coin/biya-dex-backend-exporter/internal/adapters/stake"
 	"github.com/biya-coin/biya-dex-backend-exporter/internal/metrics"
@@ -92,5 +93,187 @@ func (c *RealtimeStakeCollector) Run(ctx context.Context) error {
 	if uptimeN > 0 {
 		c.m.SetGauge("biya_stake_validators_uptime_percentage_avg", map[string]string{"chain_id": chainID}, uptimeSum/float64(uptimeN))
 	}
+
+	// 获取质押统计信息
+	c.readStatistics(ctx)
+
+	// 获取惩罚事件
+	c.readSlashingEvents(ctx)
+
+	// 获取治理统计信息
+	c.readGovernanceStatistics(ctx)
+
 	return nil
+}
+
+func (c *RealtimeStakeCollector) readStatistics(ctx context.Context) {
+	raw, err := c.api.GetStatistics(ctx)
+	if err != nil {
+		c.m.SetGauge("biya_exporter_source_up", map[string]string{"source": "stake_statistics"}, 0)
+		c.m.SetGauge("biya_staked_total_byb", nil, 0)
+		c.m.SetGauge("biya_rewards_24h_total_byb", nil, 0)
+		c.m.SetGauge("biya_apr_annual", nil, 0)
+		return
+	}
+	c.m.SetGauge("biya_exporter_source_up", map[string]string{"source": "stake_statistics"}, 1)
+
+	// 尝试解析常见的字段名（兼容多种可能的命名）
+	var resp struct {
+		TotalStaked     any `json:"totalStaked"`
+		TotalStakedBYB  any `json:"totalStakedByb"`
+		StakedTotal     any `json:"stakedTotal"`
+		Rewards24H      any `json:"rewards24h"`
+		Rewards24HBYB   any `json:"rewards24hByb"`
+		Rewards24HTotal any `json:"rewards24hTotal"`
+		APR             any `json:"apr"`
+		APRAnnual       any `json:"aprAnnual"`
+		AnnualAPR       any `json:"annualApr"`
+		StakingRatio    any `json:"stakingRatio"`
+		StakedRatio     any `json:"stakedRatio"`
+	}
+	if err := jsonUnmarshal(raw, &resp); err != nil {
+		c.log.Warn("stake statistics parse failed", "collector", "realtime_stake", "method", "readStatistics", "err", err)
+		return
+	}
+
+	// 总质押量 (BYB)
+	if v, ok := toFloat64(resp.TotalStakedBYB); ok {
+		c.m.SetGauge("biya_staked_total_byb", nil, v)
+	} else if v, ok := toFloat64(resp.TotalStaked); ok {
+		c.m.SetGauge("biya_staked_total_byb", nil, v)
+	} else if v, ok := toFloat64(resp.StakedTotal); ok {
+		c.m.SetGauge("biya_staked_total_byb", nil, v)
+	}
+
+	// 24h总奖励 (BYB)
+	if v, ok := toFloat64(resp.Rewards24HBYB); ok {
+		c.m.SetGauge("biya_rewards_24h_total_byb", nil, v)
+	} else if v, ok := toFloat64(resp.Rewards24HTotal); ok {
+		c.m.SetGauge("biya_rewards_24h_total_byb", nil, v)
+	} else if v, ok := toFloat64(resp.Rewards24H); ok {
+		c.m.SetGauge("biya_rewards_24h_total_byb", nil, v)
+	}
+
+	// 年化收益率 (0-100)
+	if v, ok := toFloat64(resp.APRAnnual); ok {
+		c.m.SetGauge("biya_apr_annual", nil, v)
+	} else if v, ok := toFloat64(resp.AnnualAPR); ok {
+		c.m.SetGauge("biya_apr_annual", nil, v)
+	} else if v, ok := toFloat64(resp.APR); ok {
+		c.m.SetGauge("biya_apr_annual", nil, v)
+	}
+
+	// 质押比例
+	if v, ok := toFloat64(resp.StakingRatio); ok {
+		c.m.SetGauge("biya_staked_ratio", nil, v)
+	} else if v, ok := toFloat64(resp.StakedRatio); ok {
+		c.m.SetGauge("biya_staked_ratio", nil, v)
+	}
+}
+
+func (c *RealtimeStakeCollector) readSlashingEvents(ctx context.Context) {
+	// 获取过去24小时的惩罚事件
+	endTime := time.Now().UTC()
+	startTime := endTime.Add(-24 * time.Hour)
+	p := stake.NestedPagination{Page: 1, PageSize: 100}
+
+	raw, err := c.api.GetSlashingEvents(ctx, startTime.Format(time.RFC3339), endTime.Format(time.RFC3339), p)
+	if err != nil {
+		c.m.SetGauge("biya_exporter_source_up", map[string]string{"source": "stake_slashing_events"}, 0)
+		c.m.SetGauge("biya_slashing_events_24h", nil, 0)
+		return
+	}
+	c.m.SetGauge("biya_exporter_source_up", map[string]string{"source": "stake_slashing_events"}, 1)
+
+	// 尝试解析事件列表
+	var resp struct {
+		Events []struct {
+			Type string `json:"type"`
+		} `json:"events"`
+		Data []struct {
+			Type string `json:"type"`
+		} `json:"data"`
+		Count int `json:"count"`
+		Total int `json:"total"`
+	}
+	if err := jsonUnmarshal(raw, &resp); err != nil {
+		c.log.Warn("stake slashing events parse failed", "collector", "realtime_stake", "method", "readSlashingEvents", "err", err)
+		return
+	}
+
+	// 统计24小时内的惩罚事件数量
+	var events []struct {
+		Type string `json:"type"`
+	}
+	if len(resp.Events) > 0 {
+		events = resp.Events
+	} else if len(resp.Data) > 0 {
+		events = resp.Data
+	}
+
+	count24H := 0
+	typeCount := make(map[string]int)
+	for _, event := range events {
+		count24H++
+		if event.Type != "" {
+			typeCount[event.Type]++
+		}
+	}
+
+	// 如果响应中有 count 或 total 字段，优先使用
+	if resp.Count > 0 {
+		count24H = resp.Count
+	} else if resp.Total > 0 {
+		count24H = resp.Total
+	}
+
+	c.m.SetGauge("biya_slashing_events_24h", nil, float64(count24H))
+
+	// 按类型统计总惩罚事件（使用 SetGauge，因为当前 registry 的 counter 通过 SetGauge 写入）
+	for eventType, count := range typeCount {
+		c.m.SetGauge("biya_slashing_events_total", map[string]string{"type": eventType}, float64(count))
+	}
+}
+
+func (c *RealtimeStakeCollector) readGovernanceStatistics(ctx context.Context) {
+	raw, err := c.api.GetGovernanceStatistics(ctx)
+	if err != nil {
+		c.m.SetGauge("biya_exporter_source_up", map[string]string{"source": "stake_governance_statistics"}, 0)
+		c.m.SetGauge("biya_voting_power_total", nil, 0)
+		c.m.SetGauge("biya_participation_rate_avg", nil, 0)
+		return
+	}
+	c.m.SetGauge("biya_exporter_source_up", map[string]string{"source": "stake_governance_statistics"}, 1)
+
+	// 尝试解析常见的字段名
+	var resp struct {
+		VotingPowerTotal      any `json:"votingPowerTotal"`
+		TotalVotingPower      any `json:"totalVotingPower"`
+		ParticipationRateAvg  any `json:"participationRateAvg"`
+		AvgParticipationRate  any `json:"avgParticipationRate"`
+		AverageParticipation  any `json:"averageParticipation"`
+		ParticipationRate     any `json:"participationRate"`
+	}
+	if err := jsonUnmarshal(raw, &resp); err != nil {
+		c.log.Warn("stake governance statistics parse failed", "collector", "realtime_stake", "method", "readGovernanceStatistics", "err", err)
+		return
+	}
+
+	// 总投票权重
+	if v, ok := toFloat64(resp.VotingPowerTotal); ok {
+		c.m.SetGauge("biya_voting_power_total", nil, v)
+	} else if v, ok := toFloat64(resp.TotalVotingPower); ok {
+		c.m.SetGauge("biya_voting_power_total", nil, v)
+	}
+
+	// 平均参与率
+	if v, ok := toFloat64(resp.ParticipationRateAvg); ok {
+		c.m.SetGauge("biya_participation_rate_avg", nil, v)
+	} else if v, ok := toFloat64(resp.AvgParticipationRate); ok {
+		c.m.SetGauge("biya_participation_rate_avg", nil, v)
+	} else if v, ok := toFloat64(resp.AverageParticipation); ok {
+		c.m.SetGauge("biya_participation_rate_avg", nil, v)
+	} else if v, ok := toFloat64(resp.ParticipationRate); ok {
+		c.m.SetGauge("biya_participation_rate_avg", nil, v)
+	}
 }

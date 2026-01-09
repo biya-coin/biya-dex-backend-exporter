@@ -22,8 +22,7 @@ logger = logging.getLogger(__name__)
 app = Flask(__name__)
 
 # 飞书机器人 Webhook URL
-LARK_WEBHOOK_URL = "https://open.larksuite.com/open-apis/bot/v2/hook/18d9f2ee-26bf-438b-9c63-ff99f668c732"
-
+LARK_WEBHOOK_URL = "https://open.larksuite.com/open-apis/bot/v2/hook/020ec13d-fd66-4910-8636-5fd213c903e3"
 # 告警级别对应的颜色和图标
 SEVERITY_CONFIG = {
     'emergency': {'color': 'red', 'icon': '🔴', 'name': '紧急'},

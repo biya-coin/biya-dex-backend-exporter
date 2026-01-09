@@ -24,7 +24,7 @@ biya_<subsystem>_<name>_<unit>
 Examples:
 - `biya_block_height` - Current block height (gauge)
 - `biya_tx_total` - Total transactions (counter)
-- `biya_gas_price_gwei` - Gas price in Gwei (gauge)
+- `biya_gas_price` - Gas price (gauge)
 
 ### Labels
 
@@ -62,7 +62,7 @@ Labels add dimensions to metrics:
 
 | Metric Name | Type | Labels | Description | Data Source |
 |-------------|------|--------|-------------|-------------|
-| `biya_gas_price_gwei` | Gauge | - | Current average gas price (Gwei) | biya-explorer |
+| `biya_gas_price` | Gauge | - | Current average gas price | biya-explorer |
 | `biya_gas_price_24h_max_gwei` | Gauge | - | 24h maximum gas price | biya-explorer |
 | `biya_gas_price_24h_min_gwei` | Gauge | - | 24h minimum gas price | biya-explorer |
 | `biya_gas_utilization_ratio` | Gauge | - | Block gas utilization (0-1) | biya-explorer |
@@ -279,7 +279,7 @@ groups:
           
       # High gas price
       - alert: HighGasPrice
-        expr: biya_gas_price_gwei > 100
+        expr: biya_gas_price > 100
         for: 5m
         labels:
           severity: warning

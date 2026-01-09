@@ -41,10 +41,10 @@ groups:
           (
             (biya_chain_block_time_seconds_avg or biya_block_time_seconds)
             > 
-            (avg_over_time((biya_chain_block_time_seconds_avg or biya_block_time_seconds)[1h]) * 3)
+            ((avg_over_time(biya_chain_block_time_seconds_avg[1h]) or avg_over_time(biya_block_time_seconds[1h])) * 3)
           )
           and
-          (avg_over_time((biya_chain_block_time_seconds_avg or biya_block_time_seconds)[1h]) > 0)
+          ((avg_over_time(biya_chain_block_time_seconds_avg[1h]) or avg_over_time(biya_block_time_seconds[1h])) > 0)
         for: 1m
         labels:
           severity: warning
@@ -250,12 +250,12 @@ groups:
       - alert: Gas价格飙升
         expr: |
           (
-            biya_gas_price_gwei 
+            biya_gas_price 
             > 
-            (avg_over_time(biya_gas_price_gwei[24h]) * 2)
+            (avg_over_time(biya_gas_price[24h]) * 2)
           )
           and
-          (avg_over_time(biya_gas_price_gwei[24h]) > 0)
+          (avg_over_time(biya_gas_price[24h]) > 0)
         for: 1m
         labels:
           severity: warning
@@ -373,7 +373,7 @@ groups:
           (
             (node_filesystem_size_bytes{mountpoint="/"} - node_filesystem_avail_bytes{mountpoint="/"})
             -
-            (node_filesystem_size_bytes{mountpoint="/"} - node_filesystem_avail_bytes{mountpoint="/"}) offset 24h
+            (node_filesystem_size_bytes{mountpoint="/"} offset 24h - node_filesystem_avail_bytes{mountpoint="/"} offset 24h)
           ) / 1024 / 1024 / 1024 > 100
           or
           (biya_storage_daily_growth_gb or vector(0)) > 100
@@ -437,9 +437,9 @@ groups:
       # 记录Gas价格倍数（相对于24h平均）
       - record: biya_gas_price_multiplier
         expr: |
-          biya_gas_price_gwei 
+          biya_gas_price 
           /
-          (avg_over_time(biya_gas_price_gwei[24h]) + 0.0001)
+          (avg_over_time(biya_gas_price[24h]) + 0.0001)
 
   # ==========================================
   # 额外的综合告警（可选）

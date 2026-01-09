@@ -24,9 +24,9 @@ func NewRealtimeExplorerCollector(log *slog.Logger, m *metrics.Metrics, api *exp
 
 func (c *RealtimeExplorerCollector) Run(ctx context.Context) error {
 	// provide.md 指标口径：
-	// - block height:   GET /demo/block/latest                -> .data.data[0].height
-	// - tx stats:       GET /demo/transaction/stats           -> .data.count_24h / .data.tps / .data.avg_block_time / .data.active_addresses_24h
-	// - gas price gwei: GET /demo/block/gas-utilization       -> .data.gas_utilization（你已澄清：该字段即“平均 gas 费”）
+	// - block height:   GET /api/v1/block/latest                -> .data.data[0].height
+	// - tx stats:       GET /api/v1/transaction/stats           -> .data.count_24h / .data.tps / .data.avg_block_time / .data.active_addresses_24h
+	// - gas price gwei: GET /api/v1/block/gas-utilization       -> .data.gas_price（你已澄清：该字段即“平均 gas 费”）
 
 	if v, ok := c.readLatestBlockHeight(ctx); ok {
 		c.m.SetGauge("biya_block_height", nil, v)
@@ -48,7 +48,7 @@ func (c *RealtimeExplorerCollector) Run(ctx context.Context) error {
 	}
 
 	if v, ok := c.readGasPriceGwei(ctx); ok {
-		c.m.SetGauge("biya_gas_price_gwei", nil, v)
+		c.m.SetGauge("biya_gas_price", nil, v)
 	}
 
 	return nil
@@ -132,27 +132,27 @@ func (c *RealtimeExplorerCollector) readTransactionStats(ctx context.Context) (t
 func (c *RealtimeExplorerCollector) readGasPriceGwei(ctx context.Context) (float64, bool) {
 	raw, err := c.api.GetBlockGasUtilization(ctx)
 	if err != nil {
-		c.m.SetGauge("biya_exporter_source_up", map[string]string{"source": "explorer_block_gas_utilization"}, 0)
+		c.m.SetGauge("biya_exporter_source_up", map[string]string{"source": "explorer_block_gas_price"}, 0)
 		return 0, false
 	}
 
 	// apiclient 已剥离 envelope.data，因此这里期望结构为：
-	// {"gas_utilization": ...}
+	// {"gas_price": ...}
 	var resp struct {
-		GasUtilization any `json:"gas_utilization"`
+		GasPrice any `json:"gas_price"`
 	}
 	if err := jsonUnmarshal(raw, &resp); err != nil {
-		c.log.Warn("explorer gas utilization parse failed", "collector", "realtime_explorer", "method", "readGasPriceGwei", "err", err)
-		c.m.SetGauge("biya_exporter_source_up", map[string]string{"source": "explorer_block_gas_utilization"}, 0)
+		c.log.Warn("explorer gas price parse failed", "collector", "realtime_explorer", "method", "readGasPriceGwei", "err", err)
+		c.m.SetGauge("biya_exporter_source_up", map[string]string{"source": "explorer_block_gas_price"}, 0)
 		return 0, false
 	}
-	v, ok := toFloat64(resp.GasUtilization)
+	v, ok := toFloat64(resp.GasPrice)
 	if !ok {
-		// 上游在部分环境可能不返回 gas_utilization 字段；此时视为该 source 不可用，避免“source_up=1 但指标为 0”的误导。
-		c.log.Warn("explorer gas utilization field missing", "collector", "realtime_explorer", "method", "readGasPriceGwei")
-		c.m.SetGauge("biya_exporter_source_up", map[string]string{"source": "explorer_block_gas_utilization"}, 0)
+		// 上游在部分环境可能不返回 gas_price 字段；此时视为该 source 不可用，避免“source_up=1 但指标为 0”的误导。
+		c.log.Warn("explorer gas price field missing", "collector", "realtime_explorer", "method", "readGasPriceGwei")
+		c.m.SetGauge("biya_exporter_source_up", map[string]string{"source": "explorer_block_gas_price"}, 0)
 		return 0, false
 	}
-	c.m.SetGauge("biya_exporter_source_up", map[string]string{"source": "explorer_block_gas_utilization"}, 1)
+	c.m.SetGauge("biya_exporter_source_up", map[string]string{"source": "explorer_block_gas_price"}, 1)
 	return v, true
 }

@@ -11,7 +11,6 @@ import (
 	"time"
 
 	"github.com/biya-coin/biya-dex-backend-exporter/internal/adapters/explorer"
-	"github.com/biya-coin/biya-dex-backend-exporter/internal/adapters/lcd"
 	"github.com/biya-coin/biya-dex-backend-exporter/internal/adapters/stake"
 	"github.com/biya-coin/biya-dex-backend-exporter/internal/adapters/tendermint"
 	"github.com/biya-coin/biya-dex-backend-exporter/internal/collectors"
@@ -51,7 +50,6 @@ func main() {
 	// adapters
 	stakeCli := stake.NewClient(cfg.Stake.BaseURL, cfg.Stake.APIKey, cfg.HTTPClient.Timeout)
 	tmCli := tendermint.NewClient(cfg.Node.TendermintRPCBaseURL, cfg.HTTPClient.Timeout)
-	lcdCli := lcd.NewClient(cfg.Node.LCDBaseURL, cfg.HTTPClient.Timeout)
 	explorerCli := explorer.NewClient(cfg.Explorer.BaseURL, cfg.Explorer.APIKey, cfg.HTTPClient.Timeout)
 
 	// collectors（按类型分组：node / stake / explorer）
@@ -59,14 +57,6 @@ func main() {
 	nodeJobs := []collectors.Job{
 		collectors.NewJob("realtime_chain", cfg.ScrapeIntervals.Realtime, collectors.NewRealtimeChainCollector(logger, m, tmCli, cfg.Mock)),
 		collectors.NewJob("minute_chain", cfg.ScrapeIntervals.Minute, collectors.NewMinuteChainCollector(logger, m, tmCli, cfg.Mock, cfg.Node.MempoolCapacity)),
-	}
-	// LCD 在部分环境可能不通/未开放；若 baseURL 为空则跳过该 job，避免 /readyz 永远不 ready。
-	if cfg.Node.LCDBaseURL != "" {
-		nodeJobs = append(nodeJobs, collectors.NewJob("hourly_chain", cfg.ScrapeIntervals.Hourly, collectors.NewHourlyChainCollector(logger, m, lcdCli)))
-	} else {
-		logger.Warn("lcd base url is empty; skip hourly_chain collector to keep exporter ready",
-			"collector", "hourly_chain",
-		)
 	}
 
 	stakeJobs := []collectors.Job{

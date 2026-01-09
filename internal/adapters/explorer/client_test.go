@@ -16,7 +16,7 @@ func TestClient_GetAccountTransactions_UsesNestedPaginationParams(t *testing.T) 
 		if got := r.Header.Get("Authorization"); got != "Bearer k" {
 			t.Fatalf("Authorization header = %q", got)
 		}
-		if got := r.URL.Path; got != "/demo/account/transactions" {
+		if got := r.URL.Path; got != "/api/v1/account/transactions" {
 			t.Fatalf("path = %q", got)
 		}
 		q := r.URL.Query()
@@ -49,7 +49,7 @@ func TestClient_GetAccountTransactions_UsesNestedPaginationParams(t *testing.T) 
 	}))
 	defer srv.Close()
 
-	c := NewClient(srv.URL+"/demo", "k", 2*time.Second)
+	c := NewClient(srv.URL, "k", 2*time.Second)
 	_, err := c.GetAccountTransactions(context.Background(), "biya1xxx", NestedPagination{Page: 1, PageSize: 10})
 	if err != nil {
 		t.Fatalf("GetAccountTransactions err: %v", err)

@@ -16,7 +16,7 @@ func TestClient_GetJSON_UnwrapsEnvelopeAndSetsBearer(t *testing.T) {
 		if got := r.Header.Get("Authorization"); got != "Bearer test_key" {
 			t.Fatalf("Authorization header = %q", got)
 		}
-		if got := r.URL.Path; got != "/demo/account/balances" {
+		if got := r.URL.Path; got != "/api/v1/account/balances" {
 			t.Fatalf("path = %q", got)
 		}
 		w.Header().Set("Content-Type", "application/json")
@@ -35,7 +35,7 @@ func TestClient_GetJSON_UnwrapsEnvelopeAndSetsBearer(t *testing.T) {
 	var out struct {
 		OK bool `json:"ok"`
 	}
-	if err := c.GetJSON(context.Background(), "/demo/account/balances", nil, &out); err != nil {
+	if err := c.GetJSON(context.Background(), "/api/v1/account/balances", nil, &out); err != nil {
 		t.Fatalf("GetJSON err: %v", err)
 	}
 	if !out.OK {

@@ -43,7 +43,7 @@ func (c *RealtimeChainCollector) Run(ctx context.Context) error {
 		return err
 	}
 	c.m.SetGauge("biya_chain_head_block_height", map[string]string{"chain_id": chainID}, float64(h))
-	// 注意：provide.md 口径里 biya_block_height 来自 explorer /demo/block/latest
+	// 注意：provide.md 口径里 biya_block_height 来自 explorer /api/v1/block/latest
 	// 这里不再写入 biya_block_height，避免同名指标被多个 collector 覆盖导致口径冲突。
 	// blocks_total 当前仍用高度近似（若后续接入 explorer 的 blocks_total，可再调整为 explorer 为准）
 	c.m.SetGauge("biya_blocks_total", nil, float64(h))
@@ -60,7 +60,7 @@ func (c *RealtimeChainCollector) Run(ctx context.Context) error {
 	avgBT := c.updateBlockTimeAvg(h, st.Result.SyncInfo.LatestBlockTime)
 	if avgBT > 0 {
 		c.m.SetGauge("biya_chain_block_time_seconds_avg", map[string]string{"chain_id": chainID}, avgBT)
-		// 注意：provide.md 口径里 biya_block_time_seconds 来自 explorer /demo/transaction/stats 的 avg_block_time
+		// 注意：provide.md 口径里 biya_block_time_seconds 来自 explorer /api/v1/transaction/stats 的 avg_block_time
 		// 这里不再写入 biya_block_time_seconds，避免同名指标被多个 collector 覆盖导致口径冲突。
 		// BFT 下确认时间可先近似为出块时间
 		c.m.SetGauge("biya_chain_tx_confirm_time_seconds_avg", map[string]string{"chain_id": chainID}, avgBT)

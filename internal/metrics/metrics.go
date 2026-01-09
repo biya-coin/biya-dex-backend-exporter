@@ -51,7 +51,7 @@ func New(chainID, version, commit string) (*Registry, *Metrics) {
 	reg.MustDeclare("biya_tx_confirm_time_seconds", TypeHistogram, "Transaction confirmation time distribution (seconds).", nil)
 	reg.MustDeclare("biya_tx_confirm_time_avg_seconds", TypeGauge, "Average confirmation time (seconds).", nil)
 
-	reg.MustDeclare("biya_gas_price_gwei", TypeGauge, "Current average gas price (Gwei).", nil)
+	reg.MustDeclare("biya_gas_price", TypeGauge, "Current average gas price.", nil)
 	reg.MustDeclare("biya_gas_price_24h_max_gwei", TypeGauge, "24h maximum gas price (Gwei).", nil)
 	reg.MustDeclare("biya_gas_price_24h_min_gwei", TypeGauge, "24h minimum gas price (Gwei).", nil)
 	reg.MustDeclare("biya_gas_utilization_ratio", TypeGauge, "Block gas utilization ratio (0-1).", nil)
@@ -116,7 +116,7 @@ func New(chainID, version, commit string) (*Registry, *Metrics) {
 	reg.SetGauge("biya_tx_failed_24h_total", nil, 0)
 	reg.SetGauge("biya_tx_confirm_time_avg_seconds", nil, 0)
 	reg.SetGauge("biya_gas_utilization_ratio", nil, 0)
-	reg.SetGauge("biya_gas_price_gwei", nil, 0)
+	reg.SetGauge("biya_gas_price", nil, 0)
 	reg.SetGauge("biya_mempool_size", nil, 0)
 	reg.SetGauge("biya_mempool_capacity", nil, 0)
 	reg.SetGauge("biya_congestion_ratio", nil, 0)

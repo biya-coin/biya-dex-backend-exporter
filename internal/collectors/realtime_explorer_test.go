@@ -22,7 +22,7 @@ func TestRealtimeExplorerCollector_ProvideMDMetrics(t *testing.T) {
 		w.Header().Set("Content-Type", "application/json")
 
 		switch r.URL.Path {
-		case "/demo/block/latest":
+		case "/api/v1/block/latest":
 			_ = json.NewEncoder(w).Encode(map[string]any{
 				"code":    0,
 				"message": "success",
@@ -33,7 +33,7 @@ func TestRealtimeExplorerCollector_ProvideMDMetrics(t *testing.T) {
 				},
 			})
 			return
-		case "/demo/transaction/stats":
+		case "/api/v1/transaction/stats":
 			_ = json.NewEncoder(w).Encode(map[string]any{
 				"code":    0,
 				"message": "success",
@@ -45,12 +45,12 @@ func TestRealtimeExplorerCollector_ProvideMDMetrics(t *testing.T) {
 				},
 			})
 			return
-		case "/demo/block/gas-utilization":
+		case "/api/v1/block/gas-utilization":
 			_ = json.NewEncoder(w).Encode(map[string]any{
 				"code":    0,
 				"message": "success",
 				"data": map[string]any{
-					"gas_utilization": "88.8",
+					"gas_price": "88.8",
 				},
 			})
 			return
@@ -64,7 +64,7 @@ func TestRealtimeExplorerCollector_ProvideMDMetrics(t *testing.T) {
 
 	_, m := metrics.New("biya", "dev", "none")
 	logger := slog.New(slog.NewTextHandler(&strings.Builder{}, &slog.HandlerOptions{}))
-	cli := explorer.NewClient(srv.URL+"/demo", "k", 2*time.Second)
+	cli := explorer.NewClient(srv.URL, "k", 2*time.Second)
 
 	c := NewRealtimeExplorerCollector(logger, m, cli, config.MockConfig{Enabled: false})
 	if err := c.Run(context.Background()); err != nil {
@@ -77,7 +77,7 @@ func TestRealtimeExplorerCollector_ProvideMDMetrics(t *testing.T) {
 	assertContains(t, out, "\nbiya_tps_current 7.5\n")
 	assertContains(t, out, "\nbiya_block_time_seconds 2.2\n")
 	assertContains(t, out, "\nbiya_active_addresses_24h 100\n")
-	assertContains(t, out, "\nbiya_gas_price_gwei 88.8\n")
+	assertContains(t, out, "\nbiya_gas_price 88.8\n")
 }
 
 func assertContains(t *testing.T, s, sub string) {

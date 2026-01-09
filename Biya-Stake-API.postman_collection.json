@@ -1,0 +1,1208 @@
+{
+	"info": {
+		"_postman_id": "biya-stake-api-collection",
+		"name": "Biya Stake API",
+		"description": "API collection for Biya Stake service - includes validators, delegations, governance, buyback, and statistics endpoints",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "健康检查与验证人",
+			"item": [
+				{
+					"name": "健康检查",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/stake/health?service=",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"stake",
+								"health"
+							],
+							"query": [
+								{
+									"key": "service",
+									"value": "",
+									"description": "可选：要检查的服务名称"
+								}
+							]
+						},
+						"description": "检查服务及其依赖组件的健康状态"
+					},
+					"response": []
+				},
+				{
+					"name": "获取所有验证人",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/stake/validators",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"stake",
+								"validators"
+							]
+						},
+						"description": "获取所有验证人列表，包含验证人详细信息和统计信息"
+					},
+					"response": []
+				},
+				{
+					"name": "根据地址获取验证人",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/stake/validator?operatorAddress=injvaloper1xxx",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"stake",
+								"validator"
+							],
+							"query": [
+								{
+									"key": "operator_address",
+									"value": "injvaloper1xxx",
+									"description": "验证人操作地址"
+								}
+							]
+						},
+						"description": "根据验证人操作地址获取特定验证人的详细信息"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "委托管理",
+			"item": [
+				{
+					"name": "获取委托人的验证人列表",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/stake/delegator/validators?delegatorAddress=inj1xxx",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"stake",
+								"delegator",
+								"validators"
+							],
+							"query": [
+								{
+									"key": "delegator_address",
+									"value": "inj1xxx",
+									"description": "委托人地址"
+								}
+							]
+						},
+						"description": "获取委托人已委托的所有验证人地址列表"
+					},
+					"response": []
+				},
+				{
+					"name": "获取委托详情",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/stake/delegation?delegatorAddress=inj1xxx&validatorAddress=injvaloper1xxx",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"stake",
+								"delegation"
+							],
+							"query": [
+								{
+									"key": "delegator_address",
+									"value": "inj1xxx",
+									"description": "委托人地址"
+								},
+								{
+									"key": "validator_address",
+									"value": "injvaloper1xxx",
+									"description": "验证人地址"
+								}
+							]
+						},
+						"description": "获取特定委托人-验证人对的委托详情，包括委托数量和余额"
+					},
+					"response": []
+				},
+				{
+					"name": "获取委托总奖励",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/stake/delegation/rewards?delegatorAddress=inj1xxx",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"stake",
+								"delegation",
+								"rewards"
+							],
+							"query": [
+								{
+									"key": "delegator_address",
+									"value": "inj1xxx",
+									"description": "委托人地址"
+								}
+							]
+						},
+						"description": "获取委托人的所有委托奖励总额"
+					},
+					"response": []
+				},
+				{
+					"name": "获取特定验证人奖励",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/stake/delegation/reward?delegatorAddress=inj1xxx&validatorAddress=injvaloper1xxx",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"stake",
+								"delegation",
+								"reward"
+							],
+							"query": [
+								{
+									"key": "delegator_address",
+									"value": "inj1xxx",
+									"description": "委托人地址"
+								},
+								{
+									"key": "validator_address",
+									"value": "injvaloper1xxx",
+									"description": "验证人地址"
+								}
+							]
+						},
+						"description": "获取委托人在特定验证人处的委托奖励"
+					},
+					"response": []
+				},
+				{
+					"name": "获取委托人提现地址",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/stake/delegator/withdraw/address?delegatorAddress=inj1xxx",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"stake",
+								"delegator",
+								"withdraw",
+								"address"
+							],
+							"query": [
+								{
+									"key": "delegator_address",
+									"value": "inj1xxx",
+									"description": "委托人地址"
+								}
+							]
+						},
+						"description": "获取委托人的奖励提现地址"
+					},
+					"response": []
+				},
+				{
+					"name": "获取委托人所有委托",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/stake/delegator/delegations?delegatorAddress=inj1xxx&pagination.page=1&pagination.pageSize=20",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"stake",
+								"delegator",
+								"delegations"
+							],
+							"query": [
+								{
+									"key": "delegator_address",
+									"value": "inj1xxx",
+									"description": "委托人地址"
+								},
+								{
+									"key": "pagination.page",
+									"value": "1",
+									"description": "页码，从1开始，默认1"
+								},
+								{
+									"key": "pagination.page_size",
+									"value": "20",
+									"description": "每页大小，默认20，最大100"
+								},
+								{
+									"key": "pagination.cursor",
+									"value": "",
+									"description": "游标（基于游标的分页，优先级高于 page）",
+									"disabled": true
+								}
+							]
+						},
+						"description": "分页获取委托人的所有委托记录"
+					},
+					"response": []
+				},
+				{
+					"name": "获取验证人的委托人列表",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/stake/validator/delegators?validatorAddress=injvaloper1xxx&pagination.page=1&pagination.pageSize=20",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"stake",
+								"validator",
+								"delegators"
+							],
+							"query": [
+								{
+									"key": "validator_address",
+									"value": "injvaloper1xxx",
+									"description": "验证人地址"
+								},
+								{
+									"key": "pagination.page",
+									"value": "1",
+									"description": "页码，从1开始，默认1"
+								},
+								{
+									"key": "pagination.page_size",
+									"value": "20",
+									"description": "每页大小，默认20，最大100"
+								},
+								{
+									"key": "pagination.cursor",
+									"value": "",
+									"description": "游标（基于游标的分页，优先级高于 page）",
+									"disabled": true
+								}
+							]
+						},
+						"description": "分页获取特定验证人的所有委托人地址列表"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "治理管理",
+			"item": [
+				{
+					"name": "获取所有提案",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/stake/governance/proposals?status=2&pagination.page=1&pagination.pageSize=20",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"stake",
+								"governance",
+								"proposals"
+							],
+							"query": [
+								{
+									"key": "status",
+									"value": "2",
+									"description": "可选：按提案状态筛选 (0=未指定, 1=质押期, 2=投票期, 3=已通过, 4=已拒绝, 5=失败)",
+									"disabled": true
+								},
+								{
+									"key": "pagination.page",
+									"value": "1",
+									"description": "页码，从1开始，默认1"
+								},
+								{
+									"key": "pagination.page_size",
+									"value": "20",
+									"description": "每页大小，默认20，最大100"
+								},
+								{
+									"key": "pagination.cursor",
+									"value": "",
+									"description": "游标（基于游标的分页，优先级高于 page）",
+									"disabled": true
+								}
+							]
+						},
+						"description": "分页获取所有治理提案"
+					},
+					"response": []
+				},
+				{
+					"name": "根据ID获取提案",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/stake/governance/proposals/by-id?proposalId=1",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"stake",
+								"governance",
+								"proposals",
+								"by-id"
+							],
+							"query": [
+								{
+									"key": "proposal_id",
+									"value": "1",
+									"description": "提案ID"
+								}
+							]
+						},
+						"description": "根据提案ID获取特定治理提案的详细信息"
+					},
+					"response": []
+				},
+				{
+					"name": "获取治理统计信息",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/stake/governance/statistics",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"stake",
+								"governance",
+								"statistics"
+							]
+						},
+						"description": "获取治理统计数据，包括平均参与率和总投票权重"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "统计信息",
+			"item": [
+				{
+					"name": "获取质押统计信息",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/stake/statistics",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"stake",
+								"statistics"
+							]
+						},
+						"description": "获取质押统计数据，包括总质押量、24小时奖励和年化收益率"
+					},
+					"response": []
+				},
+				{
+					"name": "获取惩罚事件记录",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/stake/slashing/events?startTime=2024-01-01T00:00:00Z&endTime=2024-01-02T00:00:00Z&pagination.page=1&pagination.pageSize=20",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"stake",
+								"slashing",
+								"events"
+							],
+							"query": [
+								{
+									"key": "start_time",
+									"value": "2024-01-01T00:00:00Z",
+									"description": "Optional: start time (RFC3339 format). Defaults to 24 hours ago",
+									"disabled": true
+								},
+								{
+									"key": "end_time",
+									"value": "2024-01-02T00:00:00Z",
+									"description": "Optional: end time (RFC3339 format). Defaults to now",
+									"disabled": true
+								},
+								{
+									"key": "pagination.page",
+									"value": "1",
+									"description": "页码，从1开始，默认1"
+								},
+								{
+									"key": "pagination.page_size",
+									"value": "20",
+									"description": "每页大小，默认20，最大100"
+								},
+								{
+									"key": "pagination.cursor",
+									"value": "",
+									"description": "游标（基于游标的分页，优先级高于 page）",
+									"disabled": true
+								}
+							]
+						},
+						"description": "获取指定时间范围内的验证人惩罚事件"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "回购管理 - 回购轮次",
+			"item": [
+				{
+					"name": "获取所有回购轮次",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/stake/buyback/rounds?status=2&pagination.page=1&pagination.pageSize=20",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"stake",
+								"buyback",
+								"rounds"
+							],
+							"query": [
+								{
+									"key": "status",
+									"value": "2",
+									"description": "可选：按状态筛选 (0=未指定, 1=待处理, 2=进行中, 3=已完成, 4=已取消)",
+									"disabled": true
+								},
+								{
+									"key": "pagination.page",
+									"value": "1",
+									"description": "页码，从1开始，默认1"
+								},
+								{
+									"key": "pagination.page_size",
+									"value": "20",
+									"description": "每页大小，默认20，最大100"
+								},
+								{
+									"key": "pagination.cursor",
+									"value": "",
+									"description": "游标（基于游标的分页，优先级高于 page）",
+									"disabled": true
+								}
+							]
+						},
+						"description": "分页获取所有回购轮次"
+					},
+					"response": []
+				},
+				{
+					"name": "根据ID获取回购轮次",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/stake/buyback/rounds/by-id?roundId=round-001",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"stake",
+								"buyback",
+								"rounds",
+								"by-id"
+							],
+							"query": [
+								{
+									"key": "round_id",
+									"value": "round-001",
+									"description": "轮次ID"
+								}
+							]
+						},
+						"description": "根据轮次ID获取特定回购轮次的详细信息"
+					},
+					"response": []
+				},
+				{
+					"name": "创建回购轮次",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"round_id\": \"round-001\",\n  \"start_time\": \"2024-01-01T00:00:00Z\",\n  \"end_time\": \"2024-01-31T23:59:59Z\",\n  \"total_slots\": 100,\n  \"min_amount\": \"1000000000000000000\",\n  \"max_amount\": \"100000000000000000000\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/stake/buyback/rounds",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"stake",
+								"buyback",
+								"rounds"
+							]
+						},
+						"description": "创建新的回购轮次"
+					},
+					"response": []
+				},
+				{
+					"name": "更新回购轮次",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"round_id\": \"round-001\",\n  \"start_time\": \"2024-01-01T00:00:00Z\",\n  \"end_time\": \"2024-01-31T23:59:59Z\",\n  \"total_slots\": 150,\n  \"min_amount\": \"1000000000000000000\",\n  \"max_amount\": \"200000000000000000000\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/stake/buyback/rounds",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"stake",
+								"buyback",
+								"rounds"
+							]
+						},
+						"description": "更新现有回购轮次的信息"
+					},
+					"response": []
+				},
+				{
+					"name": "更新轮次状态",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"round_id\": \"round-001\",\n  \"status\": 2\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/stake/buyback/rounds/status",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"stake",
+								"buyback",
+								"rounds",
+								"status"
+							]
+						},
+						"description": "更新回购轮次状态"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "回购管理 - 参与记录",
+			"item": [
+				{
+					"name": "获取所有参与记录",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/stake/buyback/participations?roundId=round-001&userAddress=inj1xxx&status=1&pagination.page=1&pagination.pageSize=20",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"stake",
+								"buyback",
+								"participations"
+							],
+							"query": [
+								{
+									"key": "round_id",
+									"value": "round-001",
+									"description": "可选：按轮次ID筛选",
+									"disabled": true
+								},
+								{
+									"key": "user_address",
+									"value": "inj1xxx",
+									"description": "可选：按用户地址筛选",
+									"disabled": true
+								},
+								{
+									"key": "status",
+									"value": "1",
+									"description": "可选：按状态筛选 (0=未指定, 1=已预订, 2=已提交, 3=已完成)",
+									"disabled": true
+								},
+								{
+									"key": "pagination.page",
+									"value": "1",
+									"description": "页码，从1开始，默认1"
+								},
+								{
+									"key": "pagination.page_size",
+									"value": "20",
+									"description": "每页大小，默认20，最大100"
+								},
+								{
+									"key": "pagination.cursor",
+									"value": "",
+									"description": "游标（基于游标的分页，优先级高于 page）",
+									"disabled": true
+								}
+							]
+						},
+						"description": "分页获取参与记录"
+					},
+					"response": []
+				},
+				{
+					"name": "根据ID获取参与记录",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/stake/buyback/participations/by-id?participationId=part-001",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"stake",
+								"buyback",
+								"participations",
+								"by-id"
+							],
+							"query": [
+								{
+									"key": "participation_id",
+									"value": "part-001",
+									"description": "参与记录ID"
+								}
+							]
+						},
+						"description": "根据参与ID获取特定参与记录的详细信息"
+					},
+					"response": []
+				},
+				{
+					"name": "预订参与名额",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"round_id\": \"round-001\",\n  \"user_address\": \"inj1xxx\",\n  \"booked_amount\": \"10000000000000000000\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/stake/buyback/participations",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"stake",
+								"buyback",
+								"participations"
+							]
+						},
+						"description": "在回购轮次中预订参与名额"
+					},
+					"response": []
+				},
+				{
+					"name": "提交参与代币",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"participation_id\": \"part-001\",\n  \"actual_amount\": \"10000000000000000000\",\n  \"submit_tx_hash\": \"0x1234567890abcdef\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/stake/buyback/participations/submit",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"stake",
+								"buyback",
+								"participations",
+								"submit"
+							]
+						},
+						"description": "为已预订的参与提交代币"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "回购管理 - 收益分配",
+			"item": [
+				{
+					"name": "获取收益记录",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/stake/buyback/revenue/records?roundId=round-001&userAddress=inj1xxx&claimStatus=1&pagination.page=1&pagination.pageSize=20",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"stake",
+								"buyback",
+								"revenue",
+								"records"
+							],
+							"query": [
+								{
+									"key": "round_id",
+									"value": "round-001",
+									"description": "可选：按轮次ID筛选",
+									"disabled": true
+								},
+								{
+									"key": "user_address",
+									"value": "inj1xxx",
+									"description": "可选：按用户地址筛选",
+									"disabled": true
+								},
+								{
+									"key": "claim_status",
+									"value": "1",
+									"description": "可选：按领取状态筛选 (0=未指定, 1=待领取, 2=已领取)",
+									"disabled": true
+								},
+								{
+									"key": "pagination.page",
+									"value": "1",
+									"description": "页码，从1开始，默认1"
+								},
+								{
+									"key": "pagination.page_size",
+									"value": "20",
+									"description": "每页大小，默认20，最大100"
+								},
+								{
+									"key": "pagination.cursor",
+									"value": "",
+									"description": "游标（基于游标的分页，优先级高于 page）",
+									"disabled": true
+								}
+							]
+						},
+						"description": "分页获取收益记录"
+					},
+					"response": []
+				},
+				{
+					"name": "计算收益",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"round_id\": \"round-001\",\n  \"revenue_pool_amount\": \"1000000000000000000000\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/stake/buyback/revenue/calculate",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"stake",
+								"buyback",
+								"revenue",
+								"calculate"
+							]
+						},
+						"description": "计算回购轮次的收益"
+					},
+					"response": []
+				},
+				{
+					"name": "分配收益",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"round_id\": \"round-001\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/stake/buyback/revenue/distribute",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"stake",
+								"buyback",
+								"revenue",
+								"distribute"
+							]
+						},
+						"description": "分配回购轮次的收益"
+					},
+					"response": []
+				},
+				{
+					"name": "领取收益",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"participation_id\": \"part-001\",\n  \"claim_tx_hash\": \"0x1234567890abcdef\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/stake/buyback/revenue/claim",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"stake",
+								"buyback",
+								"revenue",
+								"claim"
+							]
+						},
+						"description": "为参与记录领取收益"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "回购管理 - 销毁记录",
+			"item": [
+				{
+					"name": "获取销毁记录",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/stake/buyback/burn/records?roundId=round-001&status=2&pagination.page=1&pagination.pageSize=20",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"stake",
+								"buyback",
+								"burn",
+								"records"
+							],
+							"query": [
+								{
+									"key": "round_id",
+									"value": "round-001",
+									"description": "可选：按轮次ID筛选",
+									"disabled": true
+								},
+								{
+									"key": "status",
+									"value": "2",
+									"description": "可选：按状态筛选 (0=未指定, 1=待处理, 2=已完成, 3=失败)",
+									"disabled": true
+								},
+								{
+									"key": "pagination.page",
+									"value": "1",
+									"description": "页码，从1开始，默认1"
+								},
+								{
+									"key": "pagination.page_size",
+									"value": "20",
+									"description": "每页大小，默认20，最大100"
+								},
+								{
+									"key": "pagination.cursor",
+									"value": "",
+									"description": "游标（基于游标的分页，优先级高于 page）",
+									"disabled": true
+								}
+							]
+						},
+						"description": "分页获取销毁记录"
+					},
+					"response": []
+				},
+				{
+					"name": "获取销毁统计",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/stake/buyback/burn/statistics?startTime=2024-01-01T00:00:00Z&endTime=2024-01-31T23:59:59Z",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"stake",
+								"buyback",
+								"burn",
+								"statistics"
+							],
+							"query": [
+								{
+									"key": "start_time",
+									"value": "2024-01-01T00:00:00Z",
+									"description": "可选：开始时间 (RFC3339格式)",
+									"disabled": true
+								},
+								{
+									"key": "end_time",
+									"value": "2024-01-31T23:59:59Z",
+									"description": "可选：结束时间 (RFC3339格式)",
+									"disabled": true
+								}
+							]
+						},
+						"description": "获取销毁统计数据"
+					},
+					"response": []
+				},
+				{
+					"name": "执行销毁",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"round_id\": \"round-001\",\n  \"burn_address\": \"inj1xxx\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/stake/buyback/burn/execute",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"stake",
+								"buyback",
+								"burn",
+								"execute"
+							]
+						},
+						"description": "执行回购轮次的代币销毁"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "回购管理 - 统计数据",
+			"item": [
+				{
+					"name": "获取参与统计",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/stake/buyback/statistics/participation?roundId=round-001&startTime=2024-01-01T00:00:00Z&endTime=2024-01-31T23:59:59Z",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"stake",
+								"buyback",
+								"statistics",
+								"participation"
+							],
+							"query": [
+								{
+									"key": "round_id",
+									"value": "round-001",
+									"description": "可选：按轮次ID筛选",
+									"disabled": true
+								},
+								{
+									"key": "start_time",
+									"value": "2024-01-01T00:00:00Z",
+									"description": "可选：开始时间 (RFC3339格式)",
+									"disabled": true
+								},
+								{
+									"key": "end_time",
+									"value": "2024-01-31T23:59:59Z",
+									"description": "可选：结束时间 (RFC3339格式)",
+									"disabled": true
+								}
+							]
+						},
+						"description": "获取参与统计数据"
+					},
+					"response": []
+				},
+				{
+					"name": "获取收益统计",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/stake/buyback/statistics/revenue?roundId=round-001&startTime=2024-01-01T00:00:00Z&endTime=2024-01-31T23:59:59Z",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"stake",
+								"buyback",
+								"statistics",
+								"revenue"
+							],
+							"query": [
+								{
+									"key": "round_id",
+									"value": "round-001",
+									"description": "可选：按轮次ID筛选",
+									"disabled": true
+								},
+								{
+									"key": "start_time",
+									"value": "2024-01-01T00:00:00Z",
+									"description": "可选：开始时间 (RFC3339格式)",
+									"disabled": true
+								},
+								{
+									"key": "end_time",
+									"value": "2024-01-31T23:59:59Z",
+									"description": "可选：结束时间 (RFC3339格式)",
+									"disabled": true
+								}
+							]
+						},
+						"description": "获取收益统计数据"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "回购管理 - 报告生成",
+			"item": [
+				{
+					"name": "生成回购报告",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"round_id\": \"round-001\",\n  \"report_type\": \"monthly\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/stake/buyback/reports/generate",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"stake",
+								"buyback",
+								"reports",
+								"generate"
+							]
+						},
+						"description": "生成回购报告"
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "https://prv.stake.biya.io",
+			"type": "string"
+		}
+	]
+}

@@ -30,11 +30,8 @@ type NestedPagination struct {
 }
 
 func NewClient(baseURL, apiKey string, timeout time.Duration) *Client {
-	// 文档中的 path 带有 /demo 前缀，因此这里兼容两种配置写法：
-	// - https://prv.explorer.biya.io
-	// - https://prv.explorer.biya.io/demo
+	// 移除末尾的斜杠，确保 baseURL 格式正确
 	baseURL = strings.TrimRight(baseURL, "/")
-	baseURL = strings.TrimSuffix(baseURL, "/demo")
 	return &Client{
 		api: apiclient.New(baseURL, apiKey, timeout),
 	}
@@ -46,7 +43,7 @@ func (c *Client) CheckHealth(ctx context.Context, service string) (json.RawMessa
 		q.Set("service", service)
 	}
 	var out json.RawMessage
-	if err := c.api.GetJSON(ctx, "/demo/health", q, &out); err != nil {
+	if err := c.api.GetJSON(ctx, "/api/v1/health", q, &out); err != nil {
 		return nil, err
 	}
 	return out, nil
@@ -56,7 +53,7 @@ func (c *Client) GetAccountBalances(ctx context.Context, address string) (json.R
 	q := url.Values{}
 	q.Set("address", address)
 	var out json.RawMessage
-	if err := c.api.GetJSON(ctx, "/demo/account/balances", q, &out); err != nil {
+	if err := c.api.GetJSON(ctx, "/api/v1/account/balances", q, &out); err != nil {
 		return nil, err
 	}
 	return out, nil
@@ -66,7 +63,7 @@ func (c *Client) GetAccountInfo(ctx context.Context, address string) (json.RawMe
 	q := url.Values{}
 	q.Set("address", address)
 	var out json.RawMessage
-	if err := c.api.GetJSON(ctx, "/demo/account/info", q, &out); err != nil {
+	if err := c.api.GetJSON(ctx, "/api/v1/account/info", q, &out); err != nil {
 		return nil, err
 	}
 	return out, nil
@@ -77,7 +74,7 @@ func (c *Client) GetAccountTransactions(ctx context.Context, address string, p N
 	q.Set("address", address)
 	addNestedPagination(q, p)
 	var out json.RawMessage
-	if err := c.api.GetJSON(ctx, "/demo/account/transactions", q, &out); err != nil {
+	if err := c.api.GetJSON(ctx, "/api/v1/account/transactions", q, &out); err != nil {
 		return nil, err
 	}
 	return out, nil
@@ -116,7 +113,7 @@ func (c *Client) GetBlockByHeight(ctx context.Context, height string) (json.RawM
 	q := url.Values{}
 	q.Set("height", height)
 	var out json.RawMessage
-	if err := c.api.GetJSON(ctx, "/demo/block/by-height", q, &out); err != nil {
+	if err := c.api.GetJSON(ctx, "/api/v1/block/by-height", q, &out); err != nil {
 		return nil, err
 	}
 	return out, nil
@@ -124,7 +121,7 @@ func (c *Client) GetBlockByHeight(ctx context.Context, height string) (json.RawM
 
 func (c *Client) GetLatestBlockHeight(ctx context.Context) (json.RawMessage, error) {
 	var out json.RawMessage
-	if err := c.api.GetJSON(ctx, "/demo/block/latest-height", nil, &out); err != nil {
+	if err := c.api.GetJSON(ctx, "/api/v1/block/latest-height", nil, &out); err != nil {
 		return nil, err
 	}
 	return out, nil
@@ -134,7 +131,7 @@ func (c *Client) GetLatestBlocks(ctx context.Context, p CursorPage) (json.RawMes
 	q := url.Values{}
 	addCursorPage(q, p)
 	var out json.RawMessage
-	if err := c.api.GetJSON(ctx, "/demo/block/latest", q, &out); err != nil {
+	if err := c.api.GetJSON(ctx, "/api/v1/block/latest", q, &out); err != nil {
 		return nil, err
 	}
 	return out, nil
@@ -144,7 +141,7 @@ func (c *Client) GetLatestTransactions(ctx context.Context, p CursorPage) (json.
 	q := url.Values{}
 	addCursorPage(q, p)
 	var out json.RawMessage
-	if err := c.api.GetJSON(ctx, "/demo/transaction/latest", q, &out); err != nil {
+	if err := c.api.GetJSON(ctx, "/api/v1/transaction/latest", q, &out); err != nil {
 		return nil, err
 	}
 	return out, nil
@@ -154,7 +151,7 @@ func (c *Client) GetTransactionByHash(ctx context.Context, hash string) (json.Ra
 	q := url.Values{}
 	q.Set("hash", hash)
 	var out json.RawMessage
-	if err := c.api.GetJSON(ctx, "/demo/transaction/by-hash", q, &out); err != nil {
+	if err := c.api.GetJSON(ctx, "/api/v1/transaction/by-hash", q, &out); err != nil {
 		return nil, err
 	}
 	return out, nil
@@ -162,7 +159,7 @@ func (c *Client) GetTransactionByHash(ctx context.Context, hash string) (json.Ra
 
 func (c *Client) GetTransactionStats(ctx context.Context) (json.RawMessage, error) {
 	var out json.RawMessage
-	if err := c.api.GetJSON(ctx, "/demo/transaction/stats", nil, &out); err != nil {
+	if err := c.api.GetJSON(ctx, "/api/v1/transaction/stats", nil, &out); err != nil {
 		return nil, err
 	}
 	return out, nil
@@ -170,7 +167,7 @@ func (c *Client) GetTransactionStats(ctx context.Context) (json.RawMessage, erro
 
 func (c *Client) GetBlockGasUtilization(ctx context.Context) (json.RawMessage, error) {
 	var out json.RawMessage
-	if err := c.api.GetJSON(ctx, "/demo/block/gas-utilization", nil, &out); err != nil {
+	if err := c.api.GetJSON(ctx, "/api/v1/block/gas-utilization", nil, &out); err != nil {
 		return nil, err
 	}
 	return out, nil
@@ -180,7 +177,7 @@ func (c *Client) GetFailedTransactions24H(ctx context.Context, p NestedPaginatio
 	q := url.Values{}
 	addNestedPagination(q, p)
 	var out json.RawMessage
-	if err := c.api.GetJSON(ctx, "/demo/transaction/failed-24h", q, &out); err != nil {
+	if err := c.api.GetJSON(ctx, "/api/v1/transaction/failed-24h", q, &out); err != nil {
 		return nil, err
 	}
 	return out, nil
@@ -191,7 +188,7 @@ func addCursorPage(q url.Values, p CursorPage) {
 		q.Set("page", fmt.Sprintf("%d", p.Page))
 	}
 	if p.PageSize > 0 {
-		q.Set("pageSize", fmt.Sprintf("%d", p.PageSize))
+		q.Set("page_size", fmt.Sprintf("%d", p.PageSize))
 	}
 	if strings.TrimSpace(p.Cursor) != "" {
 		q.Set("cursor", p.Cursor)

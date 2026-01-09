@@ -63,7 +63,7 @@ func (c *MinuteChainCollector) Run(ctx context.Context) error {
 	// 2) TPS window
 	if v, ok := c.readTPSWindow(ctx); ok {
 		c.m.SetGauge("biya_chain_tps_window", map[string]string{"chain_id": chainID}, v)
-		// 注意：biya_tps_current 的 provide.md 口径来自 explorer /demo/transaction/stats
+		// 注意：biya_tps_current 的 provide.md 口径来自 explorer /api/v1/transaction/stats
 		// 这里仅保留链上近似值到 biya_chain_tps_window，避免多 collector 覆盖同名指标造成口径冲突。
 	}
 

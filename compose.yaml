@@ -23,7 +23,7 @@ services:
 
   prometheus:
     image: prom/prometheus:v3.8.1
-    container_name: biya-prometheus
+    container_name: prometheus
     command:
       - "--config.file=/etc/prometheus/prometheus.yml"
       - "--storage.tsdb.path=/prometheus"
@@ -43,7 +43,7 @@ services:
 
   alertmanager:
     image: prom/alertmanager:v0.28.1
-    container_name: biya-alertmanager
+    container_name: alertmanager
     command:
       - "--config.file=/etc/alertmanager/alertmanager.yml"
       - "--storage.path=/alertmanager"
@@ -69,7 +69,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.lark
-    container_name: biya-lark-webhook-proxy
+    container_name: lark-webhook-proxy
     ports:
       - "5001:5001"
     restart: unless-stopped
@@ -84,11 +84,39 @@ services:
       retries: 3
       start_period: 10s
 
+  grafana:
+    image: grafana/grafana:11.3.0
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./configs/grafana/provisioning:/etc/grafana/provisioning:ro
+      - grafana-data:/var/lib/grafana
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_USERS_ALLOW_SIGN_UP=false
+      - GF_SERVER_ROOT_URL=http://localhost:3000
+      - GF_DASHBOARDS_DEFAULT_HOME_DASHBOARD_UID=biya-chain-overview
+    depends_on:
+      prometheus:
+        condition: service_started
+    restart: unless-stopped
+    networks:
+      - biya-network
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3000/api/health"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+
 networks:
   biya-network:
-    driver: bridge
+    external: true
+    name: biya-backend
 
 volumes:
   prometheus-data:
   alertmanager-data:
+  grafana-data:
 

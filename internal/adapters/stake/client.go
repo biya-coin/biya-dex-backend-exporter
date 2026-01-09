@@ -191,6 +191,49 @@ func (c *Client) GetValidator(ctx context.Context, operatorAddress string) (json
 	return out, nil
 }
 
+func (c *Client) GetValidatorDelegators(ctx context.Context, validatorAddress string, p NestedPagination) (json.RawMessage, error) {
+	q := url.Values{}
+	q.Set("validatorAddress", validatorAddress)
+	addNestedPagination(q, p)
+	var out json.RawMessage
+	if err := c.api.GetJSON(ctx, "/stake/validator/delegators", q, &out); err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *Client) GetGovernanceStatistics(ctx context.Context) (json.RawMessage, error) {
+	var out json.RawMessage
+	if err := c.api.GetJSON(ctx, "/stake/governance/statistics", nil, &out); err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *Client) GetStatistics(ctx context.Context) (json.RawMessage, error) {
+	var out json.RawMessage
+	if err := c.api.GetJSON(ctx, "/stake/statistics", nil, &out); err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *Client) GetSlashingEvents(ctx context.Context, startTime, endTime string, p NestedPagination) (json.RawMessage, error) {
+	q := url.Values{}
+	if strings.TrimSpace(startTime) != "" {
+		q.Set("startTime", startTime)
+	}
+	if strings.TrimSpace(endTime) != "" {
+		q.Set("endTime", endTime)
+	}
+	addNestedPagination(q, p)
+	var out json.RawMessage
+	if err := c.api.GetJSON(ctx, "/stake/slashing/events", q, &out); err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func addCursorPage(q url.Values, p CursorPage) {
 	if p.Page > 0 {
 		q.Set("page", fmt.Sprintf("%d", p.Page))
